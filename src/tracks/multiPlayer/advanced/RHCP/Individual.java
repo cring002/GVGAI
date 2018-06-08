@@ -1,4 +1,4 @@
-package tracks.multiPlayer.advanced.coRHEA;
+package tracks.multiPlayer.advanced.RHCP;
 
 import java.util.Random;
 

@@ -1,4 +1,4 @@
-package tracks.multiPlayer.advanced.coRHEA;
+package tracks.multiPlayer.advanced.RHCP;
 
 import core.game.StateObservationMulti;
 import core.player.AbstractMultiPlayer;
@@ -15,10 +15,8 @@ public class Agent extends AbstractMultiPlayer {
     private int POPULATION_SIZE = 9;
     private int SIMULATION_DEPTH = 10;
     private int CROSSOVER_TYPE = UNIFORM_CROSS;
-    private double DISCOUNT = 1; //0.99;
 
     // set
-    //    private boolean REPLACE = false;
     private int MUTATION = 1;
     private int TOURNAMENT_SIZE = 2;
     private int NO_PARENTS = 2;
@@ -70,30 +68,46 @@ public class Agent extends AbstractMultiPlayer {
         this.playerID = playerID;
         noPlayers = stateObs.getNoPlayers();
         opponentID = (playerID+1)%noPlayers;
+
+        population = new Individual[POPULATION_SIZE];
+        nextPop = new Individual[POPULATION_SIZE];
+
+        N_ACTIONS = new int[noPlayers];
+        NUM_INDIVIDUALS  = POPULATION_SIZE;
+        action_mapping = new HashMap[noPlayers];
     }
 
+    /*
+     This is where the *magic* happens.
+     Act is called from the game and is required to return a move in a certain time from (0.04) seconds.
+     Act does a few things:
+        Init Pop:
+            Make a new population (if first move/not using shift buffer) OR shift if using shift buffer and not first move
+        Runs the evolution loop:
+            Whilst there is enough time generate the next population of individuals
+        Return best move:
+            return the best move
+
+     */
     @Override
     public Types.ACTIONS act(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer) {
-        this.timer = elapsedTimer;
-        avgTimeTaken = 0;
-        acumTimeTaken = 0;
-        numEvals = 0;
-        acumTimeTakenEval = 0;
-        numIters = 0;
-        remaining = timer.remainingTimeMillis();
-        NUM_INDIVIDUALS = 0;
-        keepIterating = true;
-
+        timer = elapsedTimer; //Store the start time of this action selection
+        avgTimeTaken = 0; //Store avg time taken per iteration
+        acumTimeTaken = 0; //And total times takes
+        numEvals = 0; //Number of evaluations taken
+        acumTimeTakenEval = 0; //Time taken for evals (I think)
+        numIters = 0; //Number of iterations taken
+        //NUM_INDIVIDUALS = 0; //todo: this does something very very important. I just wish I knew what exactly...
+        keepIterating = true; //Naturally we have all of the time in the world so keep iterating from the start
         // INITIALISE POPULATION
         init_pop(stateObs);
-
         // RUN EVOLUTION
         remaining = timer.remainingTimeMillis();
         while (remaining > avgTimeTaken && remaining > BREAK_MS && keepIterating) {
+            //While there is time left iterate the EA
             runIteration(stateObs);
             remaining = timer.remainingTimeMillis();
         }
-
         // RETURN ACTION
         Types.ACTIONS best = get_best_action(population);
         return best;
@@ -105,7 +119,6 @@ public class Agent extends AbstractMultiPlayer {
      */
     private void runIteration(StateObservationMulti stateObs) {
         ElapsedCpuTimer elapsedTimerIteration = new ElapsedCpuTimer();
-
         if (NUM_INDIVIDUALS > 1) {
             for (int i = ELITISM; i < NUM_INDIVIDUALS; i++) {
                 if (remaining > 2*avgTimeTakenEval && remaining > BREAK_MS) { // if enough time to evaluate one more individual
@@ -137,22 +150,15 @@ public class Agent extends AbstractMultiPlayer {
                     return o1.compareTo(o2);
                 }
             });
-        } else if (NUM_INDIVIDUALS == 1){
-            Individual newind = new Individual(SIMULATION_DEPTH, N_ACTIONS[playerID], randomGenerator).mutate(MUTATION);
-            evaluate(newind, opPlan, heuristic, stateObs, playerID);
-            if (newind.value > population[0].value)
-                nextPop[0] = newind;
         }
 
         population = nextPop.clone();
-        /*TODO: I think this is the right place to put this, basically here we need to mutate the oponents plan,
+        /*TODO: I think this is the right place to put this, basically here we need to mutate the opponents plan,
         Evaulate them both vs the current best plan and choose the best one as the neew op
         */
         opPlanM = opPlan.mutate(MUTATION);
-
         double planScore =  evaluate(opPlan, population[0], heuristic, stateObs, playerID+1);
         double planMScore =  evaluate(opPlan, population[0], heuristic, stateObs, playerID+1);
-
         if(planMScore >= planScore) opPlan = opPlanM;
 
         numIters++;
@@ -199,9 +205,6 @@ public class Agent extends AbstractMultiPlayer {
 
         StateObservationMulti first = st.copy();
         double value = heuristic.evaluateState(first, playerID);
-
-        // Apply discount factor
-        value *= Math.pow(DISCOUNT,i);
 
         individual.value = value;
 
@@ -281,26 +284,16 @@ public class Agent extends AbstractMultiPlayer {
      * @param stateObs - current game state
      */
     @SuppressWarnings("unchecked")
-    //TODO: SHIFT BUFFER
     private void init_pop(StateObservationMulti stateObs) {
-        if (shift_buffer && !firstIteration)
+        if (shift_buffer && !firstIteration) //if using shift buffer and we have a population (e.g. not first move of the game)
         {
             firstIteration = false;
-            for(int i = 0; i < population.length; i++)
-            {
-                population[i].shift();
-            }
-            //TODO: Experiment with opponenet shift buffer
-            //I think it is a very bad idea to have it
+            for(int i = 0; i < population.length; i++)  population[i].shift(); //Shift the elements down by one
+            //TODO: Experiment with opponent shift buffer, I think it is a very bad idea to have it so right now we don't do it
             //opPlan.shift();
             opPlan = new Individual(SIMULATION_DEPTH, N_ACTIONS[playerID+1], randomGenerator);
             return;
         }
-
-        double remaining = timer.remainingTimeMillis();
-
-        N_ACTIONS = new int[noPlayers];
-        action_mapping = new HashMap[noPlayers];
 
         for (int i = 0; i < noPlayers; i++) {
             ArrayList<Types.ACTIONS> actions = stateObs.getAvailableActions(i);
@@ -314,38 +307,29 @@ public class Agent extends AbstractMultiPlayer {
             action_mapping[i].put(k, Types.ACTIONS.ACTION_NIL);
         }
 
-        //todo:These N-ACTIONS prob want to be playerID+1 or 1-playerID, not sure which. Simons codes used 1-pid so that is whatI  have atm
+        //todo:These N-ACTIONS prob want to be playerID+1 or 1-playerID, not sure which. Simon's codes used 1-pid so that is what I  have atm
         opPlan = new Individual(SIMULATION_DEPTH, N_ACTIONS[1 - playerID], randomGenerator);
         opPlanM = new Individual(SIMULATION_DEPTH, N_ACTIONS[1 - playerID], randomGenerator);
-//        opPlan = new Individual(SIMULATION_DEPTH, N_ACTIONS[playerID+1], randomGenerator);
-//        opPlanM = new Individual(SIMULATION_DEPTH, N_ACTIONS[playerID+1], randomGenerator);
 
-        population = new Individual[POPULATION_SIZE];
-        nextPop = new Individual[POPULATION_SIZE];
         for (int i = 0; i < POPULATION_SIZE; i++) {
-            if (i == 0 || remaining > avgTimeTakenEval && remaining > BREAK_MS) {
-                population[i] = new Individual(SIMULATION_DEPTH, N_ACTIONS[playerID], randomGenerator);
-                evaluate(population[i], opPlan, heuristic, stateObs, playerID);
-                remaining = timer.remainingTimeMillis();
-                NUM_INDIVIDUALS = i+1;
-            } else {break;}
+            population[i] = new Individual(SIMULATION_DEPTH, N_ACTIONS[playerID], randomGenerator);
+            evaluate(population[i], opPlan, heuristic, stateObs, playerID);
         }
 
-//        if (NUM_INDIVIDUALS > 1)
-//            Arrays.sort(population, new Comparator<Individual>() {
-//                @Override
-//                public int compare(Individual o1, Individual o2) {
-//                    if (o1 == null && o2 == null) {
-//                        return 0;
-//                    }
-//                    if (o1 == null) {
-//                        return 1;
-//                    }
-//                    if (o2 == null) {
-//                        return -1;
-//                    }
-//                    return o1.compareTo(o2);
-//                }});
+        Arrays.sort(population, new Comparator<Individual>() {
+                @Override
+                public int compare(Individual o1, Individual o2) {
+                    if (o1 == null && o2 == null) {
+                        return 0;
+                    }
+                    if (o1 == null) {
+                        return 1;
+                    }
+                    if (o2 == null) {
+                        return -1;
+                    }
+                    return o1.compareTo(o2);
+                }});
         for (int i = 0; i < NUM_INDIVIDUALS; i++) {
             if (population[i] != null)
                 nextPop[i] = population[i].copy();

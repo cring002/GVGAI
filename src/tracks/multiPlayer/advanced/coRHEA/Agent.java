@@ -12,7 +12,7 @@ import java.util.*;
 public class Agent extends AbstractMultiPlayer {
 
     // variable
-    private int POPULATION_SIZE = 10;
+    private int POPULATION_SIZE = 9;
     private int SIMULATION_DEPTH = 10;
     private int CROSSOVER_TYPE = UNIFORM_CROSS;
     private double DISCOUNT = 1; //0.99;
@@ -48,6 +48,10 @@ public class Agent extends AbstractMultiPlayer {
     private int numEvals = 0, numIters = 0;
     private boolean keepIterating = true;
     private long remaining;
+
+    private boolean shift_buffer = false;
+    private boolean firstIteration = true;
+    private  boolean crossOverOn = true;
 
 
     //Multiplayer game parameters
@@ -118,7 +122,8 @@ public class Agent extends AbstractMultiPlayer {
                 if (remaining > 2*avgTimeTakenEval && remaining > BREAK_MS) { // if enough time to evaluate one more individual
                     Individual newind;
 
-                    newind = crossover();
+                    newind = crossOverOn ? crossover() : population[0].copy();
+
                     newind = newind.mutate(MUTATION);
 
                     // evaluate new individual, insert into population
@@ -274,7 +279,25 @@ public class Agent extends AbstractMultiPlayer {
      * @param stateObs - current game state
      */
     @SuppressWarnings("unchecked")
+    //TODO: SHIFT BUFFER
     private void init_pop(StateObservationMulti stateObs) {
+        if (shift_buffer && !firstIteration)
+        {
+            firstIteration = false;
+            for(int i = 0; i < population.length; i++)
+            {
+                if(population[i] == null)
+                {
+                    System.out.println("opps");
+                }
+                population[i].shift();
+            }
+            //TODO: Experiment with opponenet shift buffer
+            //I think it is a very bad idea to have it
+            //opPlan.shift();
+            opPlan = new Individual(SIMULATION_DEPTH, N_ACTIONS[playerID+1], randomGenerator);
+            return;
+        }
 
         double remaining = timer.remainingTimeMillis();
 

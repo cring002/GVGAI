@@ -24,6 +24,16 @@ public class Individual implements Comparable{
         System.arraycopy(a, 0, actions, 0, a.length);
     }
 
+    public void setRandAction (int _i){actions[_i] = gen.nextInt(n);}
+
+    public void shift (){
+        int j = 0;
+        for(; j < actions.length-1; j++) {
+            actions[j] = actions[j+1];
+        }
+       setRandAction(j);
+    }
+
     /**
      * Returns new individual
      * @param MUT

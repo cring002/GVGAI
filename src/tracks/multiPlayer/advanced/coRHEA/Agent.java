@@ -18,12 +18,10 @@ public class Agent extends AbstractMultiPlayer {
     private double DISCOUNT = 1; //0.99;
 
     // set
-    private boolean REEVALUATE = false;
     //    private boolean REPLACE = false;
     private int MUTATION = 1;
     private int TOURNAMENT_SIZE = 2;
     private int NO_PARENTS = 2;
-    private int RESAMPLE = 1;
     private int ELITISM = 1;
 
     // constants
@@ -49,9 +47,9 @@ public class Agent extends AbstractMultiPlayer {
     private boolean keepIterating = true;
     private long remaining;
 
-    private boolean shift_buffer = false;
+    private boolean shift_buffer = true;
     private boolean firstIteration = true;
-    private  boolean crossOverOn = true;
+    private  boolean crossOverOn = false;
 
 
     //Multiplayer game parameters
@@ -89,7 +87,6 @@ public class Agent extends AbstractMultiPlayer {
         // INITIALISE POPULATION
         init_pop(stateObs);
 
-
         // RUN EVOLUTION
         remaining = timer.remainingTimeMillis();
         while (remaining > avgTimeTaken && remaining > BREAK_MS && keepIterating) {
@@ -109,20 +106,12 @@ public class Agent extends AbstractMultiPlayer {
     private void runIteration(StateObservationMulti stateObs) {
         ElapsedCpuTimer elapsedTimerIteration = new ElapsedCpuTimer();
 
-        if (REEVALUATE) {
-            for (int i = 0; i < ELITISM; i++) {
-                if (remaining > 2*avgTimeTakenEval && remaining > BREAK_MS) { // if enough time to evaluate one more individual
-                    evaluate(population[i], opPlan, heuristic, stateObs, playerID);
-                } else {keepIterating = false;}
-            }
-        }
-
         if (NUM_INDIVIDUALS > 1) {
             for (int i = ELITISM; i < NUM_INDIVIDUALS; i++) {
                 if (remaining > 2*avgTimeTakenEval && remaining > BREAK_MS) { // if enough time to evaluate one more individual
                     Individual newind;
 
-                    newind = crossOverOn ? crossover() : population[0].copy();
+                    newind = crossover();
 
                     newind = newind.mutate(MUTATION);
 
@@ -228,7 +217,20 @@ public class Agent extends AbstractMultiPlayer {
      * @return - the individual resulting from crossover applied to the specified population
      */
     private Individual crossover() {
+        //todo: Have a method to turn this off and so something inexpensive instead
         Individual newind = null;
+        if(!crossOverOn)
+        {
+            //Tournament selection for when not using crossover
+            Individual[] tournament = new Individual[TOURNAMENT_SIZE];
+            //Select a number of random distinct individuals for tournament and sort them based on value
+            for (int i = 0; i < TOURNAMENT_SIZE; i++) {
+                int index = randomGenerator.nextInt(population.length);
+                tournament[i] = population[index];
+            }
+            Arrays.sort(tournament);
+            return tournament[0].copy();
+        }
         if (NUM_INDIVIDUALS > 1) {
             newind = new Individual(SIMULATION_DEPTH, N_ACTIONS[playerID], randomGenerator);
             Individual[] tournament = new Individual[TOURNAMENT_SIZE];
@@ -286,10 +288,6 @@ public class Agent extends AbstractMultiPlayer {
             firstIteration = false;
             for(int i = 0; i < population.length; i++)
             {
-                if(population[i] == null)
-                {
-                    System.out.println("opps");
-                }
                 population[i].shift();
             }
             //TODO: Experiment with opponenet shift buffer
@@ -316,9 +314,11 @@ public class Agent extends AbstractMultiPlayer {
             action_mapping[i].put(k, Types.ACTIONS.ACTION_NIL);
         }
 
-        //todo:These N-ACTIONS prob want to be playerID+1
-        opPlan = new Individual(SIMULATION_DEPTH, N_ACTIONS[playerID+1], randomGenerator);
-        opPlanM = new Individual(SIMULATION_DEPTH, N_ACTIONS[playerID+1], randomGenerator);
+        //todo:These N-ACTIONS prob want to be playerID+1 or 1-playerID, not sure which. Simons codes used 1-pid so that is whatI  have atm
+        opPlan = new Individual(SIMULATION_DEPTH, N_ACTIONS[1 - playerID], randomGenerator);
+        opPlanM = new Individual(SIMULATION_DEPTH, N_ACTIONS[1 - playerID], randomGenerator);
+//        opPlan = new Individual(SIMULATION_DEPTH, N_ACTIONS[playerID+1], randomGenerator);
+//        opPlanM = new Individual(SIMULATION_DEPTH, N_ACTIONS[playerID+1], randomGenerator);
 
         population = new Individual[POPULATION_SIZE];
         nextPop = new Individual[POPULATION_SIZE];
@@ -331,21 +331,21 @@ public class Agent extends AbstractMultiPlayer {
             } else {break;}
         }
 
-        if (NUM_INDIVIDUALS > 1)
-            Arrays.sort(population, new Comparator<Individual>() {
-                @Override
-                public int compare(Individual o1, Individual o2) {
-                    if (o1 == null && o2 == null) {
-                        return 0;
-                    }
-                    if (o1 == null) {
-                        return 1;
-                    }
-                    if (o2 == null) {
-                        return -1;
-                    }
-                    return o1.compareTo(o2);
-                }});
+//        if (NUM_INDIVIDUALS > 1)
+//            Arrays.sort(population, new Comparator<Individual>() {
+//                @Override
+//                public int compare(Individual o1, Individual o2) {
+//                    if (o1 == null && o2 == null) {
+//                        return 0;
+//                    }
+//                    if (o1 == null) {
+//                        return 1;
+//                    }
+//                    if (o2 == null) {
+//                        return -1;
+//                    }
+//                    return o1.compareTo(o2);
+//                }});
         for (int i = 0; i < NUM_INDIVIDUALS; i++) {
             if (population[i] != null)
                 nextPop[i] = population[i].copy();

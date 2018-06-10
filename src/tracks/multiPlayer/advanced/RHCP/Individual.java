@@ -6,7 +6,7 @@ public class Individual implements Comparable{
 
     protected int[] actions; // actions in individual. length of individual = actions.length
     protected int n; // number of legal actions
-    protected double value;
+    protected double value; //fitness
     private Random gen;
 
     private boolean MUT_BIAS = false;

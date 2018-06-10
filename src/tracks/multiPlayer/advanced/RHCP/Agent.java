@@ -7,6 +7,7 @@ import tools.ElapsedCpuTimer;
 import tracks.multiPlayer.tools.heuristics.StateHeuristicMulti;
 import tracks.multiPlayer.tools.heuristics.WinScoreHeuristic;
 
+import java.lang.reflect.Array;
 import java.util.*;
 
 public class Agent extends AbstractMultiPlayer {
@@ -18,9 +19,9 @@ public class Agent extends AbstractMultiPlayer {
 
     // set
     private int MUTATION = 1;
-    private int TOURNAMENT_SIZE = 2;
+    private int TOURNAMENT_SIZE = 3;
     private int NO_PARENTS = 2;
-    private int ELITISM = 1;
+    private int ELITISM = 3;
 
     // constants
     private final long BREAK_MS = 10;
@@ -97,7 +98,6 @@ public class Agent extends AbstractMultiPlayer {
         numEvals = 0; //Number of evaluations taken
         acumTimeTakenEval = 0; //Time taken for evals (I think)
         numIters = 0; //Number of iterations taken
-        //NUM_INDIVIDUALS = 0; //todo: this does something very very important. I just wish I knew what exactly...
         keepIterating = true; //Naturally we have all of the time in the world so keep iterating from the start
         // INITIALISE POPULATION
         init_pop(stateObs);
@@ -118,43 +118,44 @@ public class Agent extends AbstractMultiPlayer {
      * @param stateObs - current game state
      */
     private void runIteration(StateObservationMulti stateObs) {
+        //Find out how much time we have used up
         ElapsedCpuTimer elapsedTimerIteration = new ElapsedCpuTimer();
-        if (NUM_INDIVIDUALS > 1) {
-            for (int i = ELITISM; i < NUM_INDIVIDUALS; i++) {
-                if (remaining > 2*avgTimeTakenEval && remaining > BREAK_MS) { // if enough time to evaluate one more individual
-                    Individual newind;
 
-                    newind = crossover();
+        //
+        for (int i = ELITISM; i < NUM_INDIVIDUALS; i++) {
+            if (remaining > 2*avgTimeTakenEval && remaining > BREAK_MS) { // if enough time to evaluate one more individual
+                Individual newind;
 
-                    newind = newind.mutate(MUTATION);
+                newind = crossover();
 
-                    // evaluate new individual, insert into population
-                    add_individual(newind, nextPop, i, stateObs);
+                newind = newind.mutate(MUTATION);
 
-                    remaining = timer.remainingTimeMillis();
+                // evaluate new individual, insert into population
+                add_individual(newind, nextPop, i, stateObs);
 
-                } else {keepIterating = false; break;}
-            }
-            Arrays.sort(nextPop, new Comparator<Individual>() {
-                @Override
-                public int compare(Individual o1, Individual o2) {
-                    if (o1 == null && o2 == null) {
-                        return 0;
-                    }
-                    if (o1 == null) {
-                        return 1;
-                    }
-                    if (o2 == null) {
-                        return -1;
-                    }
-                    return o1.compareTo(o2);
-                }
-            });
+                remaining = timer.remainingTimeMillis();
+
+            } else {keepIterating = false; break;}
         }
+        Arrays.sort(nextPop, new Comparator<Individual>() {
+            @Override
+            public int compare(Individual o1, Individual o2) {
+                if (o1 == null && o2 == null) {
+                    return 0;
+                }
+                if (o1 == null) {
+                    return 1;
+                }
+                if (o2 == null) {
+                    return -1;
+                }
+                return o1.compareTo(o2);
+            }
+        });
 
         population = nextPop.clone();
         /*TODO: I think this is the right place to put this, basically here we need to mutate the opponents plan,
-        Evaulate them both vs the current best plan and choose the best one as the neew op
+        Evaulate them both vs the current best plan and choose the best one as the new op
         */
         opPlanM = opPlan.mutate(MUTATION);
         double planScore =  evaluate(opPlan, population[0], heuristic, stateObs, playerID+1);
@@ -295,8 +296,11 @@ public class Agent extends AbstractMultiPlayer {
             return;
         }
 
+        //Loop through all players
         for (int i = 0; i < noPlayers; i++) {
+            //And get the actions they can make
             ArrayList<Types.ACTIONS> actions = stateObs.getAvailableActions(i);
+            //Storing them here
             N_ACTIONS[i] = actions.size() + 1;
             action_mapping[i] = new HashMap<>();
             int k = 0;
@@ -304,37 +308,43 @@ public class Agent extends AbstractMultiPlayer {
                 action_mapping[i].put(k, action);
                 k++;
             }
+            //Add a nil action (for do nothing)
             action_mapping[i].put(k, Types.ACTIONS.ACTION_NIL);
         }
 
-        //todo:These N-ACTIONS prob want to be playerID+1 or 1-playerID, not sure which. Simon's codes used 1-pid so that is what I  have atm
+        //Make a new plan for opponent and op mutated
+        //TODO:These N-ACTIONS want to be playerID+1 or 1-playerID, not sure which. Simon's codes used 1-pid so that is what I  have atm
         opPlan = new Individual(SIMULATION_DEPTH, N_ACTIONS[1 - playerID], randomGenerator);
         opPlanM = new Individual(SIMULATION_DEPTH, N_ACTIONS[1 - playerID], randomGenerator);
 
+        //Go through the inital population and evaluate it
+        //TODO:Maybe here we want to ignore the opponent to begin with?
         for (int i = 0; i < POPULATION_SIZE; i++) {
             population[i] = new Individual(SIMULATION_DEPTH, N_ACTIONS[playerID], randomGenerator);
             evaluate(population[i], opPlan, heuristic, stateObs, playerID);
         }
 
-        Arrays.sort(population, new Comparator<Individual>() {
-                @Override
-                public int compare(Individual o1, Individual o2) {
-                    if (o1 == null && o2 == null) {
-                        return 0;
-                    }
-                    if (o1 == null) {
-                        return 1;
-                    }
-                    if (o2 == null) {
-                        return -1;
-                    }
-                    return o1.compareTo(o2);
-                }});
+//        Arrays.sort(population, new Comparator<Individual>() {
+//                @Override
+//                public int compare(Individual o1, Individual o2) {
+//                    if (o1 == null && o2 == null) {
+//                        return 0;
+//                    }
+//                    if (o1 == null) {
+//                        return 1;
+//                    }
+//                    if (o2 == null) {
+//                        return -1;
+//                    }
+//                    return o1.compareTo(o2);
+//                }});
+        Arrays.sort(population); //population already implements comparable and is always not null (because I removed the possibility)
+
+        //Load them into the next population
         for (int i = 0; i < NUM_INDIVIDUALS; i++) {
             if (population[i] != null)
                 nextPop[i] = population[i].copy();
         }
-
     }
 
     /**

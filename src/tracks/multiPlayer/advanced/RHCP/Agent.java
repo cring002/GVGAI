@@ -151,9 +151,9 @@ public class Agent extends AbstractMultiPlayer {
         //TODO: I Keep getting a time out, maytbe this is causing it, adding in a check to only do if we have time
         if (!(remaining < opEvalAvg || remaining < BREAK_MS)) {
             elapsedTimerIteration = new ElapsedCpuTimer();
-            opPlanM = opPlan.mutate(MUTATION);
-            double planScore = evaluate(opPlan, nextPop[0], heuristic, stateObs, playerID + 1);
-            double planMScore = evaluate(opPlan, nextPop[0], heuristic, stateObs, playerID + 1);
+            opPlanM = opPlan.mutate(NO_CROSS_MUTATE);
+            double planScore = evaluate(opPlan, nextPop[0], heuristic, stateObs, 1 - playerID);
+            double planMScore = evaluate(opPlan, nextPop[0], heuristic, stateObs, 1 - playerID);
             if (planMScore >= planScore) opPlan = opPlanM;
             opEvalAvg = opEvalAvg*(numIters/(numIters+1))+elapsedTimerIteration.elapsedMillis() / (numIters + 1);
         }

@@ -476,11 +476,11 @@ public class ArcadeMachine {
 		if ((no_players - disqCount) >= toPlay.no_players) {
 		    score = toPlay.runGame(players, randomSeed);
 		    //score = toPlay.playGame(players, randomSeed, false, 0);
-		    toPlay.printResult();
+		    //toPlay.printResult();
 		} else {
 		    // Get the score for the result.
 		    score = toPlay.handleResult();
-		    toPlay.printResult();
+		    //toPlay.printResult();
 		}
 
 		// Finally, when the game is over, we need to tear the players

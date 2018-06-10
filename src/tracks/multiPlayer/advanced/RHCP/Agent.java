@@ -21,10 +21,10 @@ public class Agent extends AbstractMultiPlayer {
     private int MUTATION = 1;
     private int TOURNAMENT_SIZE = 3;
     private int NO_PARENTS = 2;
-    private int ELITISM = 3;
+    private int ELITISM = 1;
 
     // constants
-    private final long BREAK_MS = 10;
+    private final long BREAK_MS = 12;
     public static final double epsilon = 1e-6;
     static final int POINT1_CROSS = 0;
     static final int UNIFORM_CROSS = 1;
@@ -49,6 +49,8 @@ public class Agent extends AbstractMultiPlayer {
     private boolean shift_buffer = true;
     private boolean firstIteration = true;
     private  boolean crossOverOn = false;
+    private float opEvalAvg = 0f;
+    private int NO_CROSS_MUTATE = 5;
 
 
     //Multiplayer game parameters
@@ -126,9 +128,12 @@ public class Agent extends AbstractMultiPlayer {
             if (remaining > 2*avgTimeTakenEval && remaining > BREAK_MS) { // if enough time to evaluate one more individual
                 Individual newind;
 
-                newind = crossover();
-
-                newind = newind.mutate(MUTATION);
+                if(crossOverOn) {
+                    newind = crossover();
+                    newind = newind.mutate(MUTATION);
+                } else {
+                    newind = getHeavyMutatedInd();
+                }
 
                 // evaluate new individual, insert into population
                 add_individual(newind, nextPop, i, stateObs);
@@ -137,30 +142,21 @@ public class Agent extends AbstractMultiPlayer {
 
             } else {keepIterating = false; break;}
         }
-        Arrays.sort(nextPop, new Comparator<Individual>() {
-            @Override
-            public int compare(Individual o1, Individual o2) {
-                if (o1 == null && o2 == null) {
-                    return 0;
-                }
-                if (o1 == null) {
-                    return 1;
-                }
-                if (o2 == null) {
-                    return -1;
-                }
-                return o1.compareTo(o2);
-            }
-        });
+        Arrays.sort(nextPop);
 
         population = nextPop.clone();
         /*TODO: I think this is the right place to put this, basically here we need to mutate the opponents plan,
         Evaulate them both vs the current best plan and choose the best one as the new op
         */
-        opPlanM = opPlan.mutate(MUTATION);
-        double planScore =  evaluate(opPlan, population[0], heuristic, stateObs, playerID+1);
-        double planMScore =  evaluate(opPlan, population[0], heuristic, stateObs, playerID+1);
-        if(planMScore >= planScore) opPlan = opPlanM;
+        //TODO: I Keep getting a time out, maytbe this is causing it, adding in a check to only do if we have time
+        if (!(remaining < opEvalAvg || remaining < BREAK_MS)) {
+            elapsedTimerIteration = new ElapsedCpuTimer();
+            opPlanM = opPlan.mutate(MUTATION);
+            double planScore = evaluate(opPlan, nextPop[0], heuristic, stateObs, playerID + 1);
+            double planMScore = evaluate(opPlan, nextPop[0], heuristic, stateObs, playerID + 1);
+            if (planMScore >= planScore) opPlan = opPlanM;
+            opEvalAvg = opEvalAvg*(numIters/(numIters+1))+elapsedTimerIteration.elapsedMillis() / (numIters + 1);
+        }
 
         numIters++;
         acumTimeTaken += (elapsedTimerIteration.elapsedMillis());
@@ -169,7 +165,7 @@ public class Agent extends AbstractMultiPlayer {
 
     /**
      * Evaluates an individual by rolling the current state with the actions in the individual
-     * and returning the value of the resulting state; random action chosen for the opponent
+     * and returning the value of the resulting state;
      * @param individual - individual to be valued
      * @param heuristic - heuristic to be used for state evaluation
      * @param state - current state, root of rollouts
@@ -220,21 +216,21 @@ public class Agent extends AbstractMultiPlayer {
     /**
      * @return - the individual resulting from crossover applied to the specified population
      */
-    private Individual crossover() {
-        //todo: Have a method to turn this off and so something inexpensive instead
-        Individual newind = null;
-        if(!crossOverOn)
-        {
-            //Tournament selection for when not using crossover
-            Individual[] tournament = new Individual[TOURNAMENT_SIZE];
-            //Select a number of random distinct individuals for tournament and sort them based on value
-            for (int i = 0; i < TOURNAMENT_SIZE; i++) {
-                int index = randomGenerator.nextInt(population.length);
-                tournament[i] = population[index];
-            }
-            Arrays.sort(tournament);
-            return tournament[0].copy();
+    private Individual getHeavyMutatedInd()
+    {
+        //Tournament selection for when not using crossover
+        Individual[] tournament = new Individual[TOURNAMENT_SIZE];
+        //Select a number of random distinct individuals for tournament and sort them based on value
+        for (int i = 0; i < TOURNAMENT_SIZE; i++) {
+            int index = randomGenerator.nextInt(population.length);
+            tournament[i] = population[index];
         }
+        Arrays.sort(tournament);
+        return tournament[0].copy().mutate(NO_CROSS_MUTATE);
+    }
+    private Individual crossover() {
+        Individual newind = null;
+
         if (NUM_INDIVIDUALS > 1) {
             newind = new Individual(SIMULATION_DEPTH, N_ACTIONS[playerID], randomGenerator);
             Individual[] tournament = new Individual[TOURNAMENT_SIZE];
@@ -323,27 +319,11 @@ public class Agent extends AbstractMultiPlayer {
             population[i] = new Individual(SIMULATION_DEPTH, N_ACTIONS[playerID], randomGenerator);
             evaluate(population[i], opPlan, heuristic, stateObs, playerID);
         }
-
-//        Arrays.sort(population, new Comparator<Individual>() {
-//                @Override
-//                public int compare(Individual o1, Individual o2) {
-//                    if (o1 == null && o2 == null) {
-//                        return 0;
-//                    }
-//                    if (o1 == null) {
-//                        return 1;
-//                    }
-//                    if (o2 == null) {
-//                        return -1;
-//                    }
-//                    return o1.compareTo(o2);
-//                }});
         Arrays.sort(population); //population already implements comparable and is always not null (because I removed the possibility)
 
         //Load them into the next population
         for (int i = 0; i < NUM_INDIVIDUALS; i++) {
-            if (population[i] != null)
-                nextPop[i] = population[i].copy();
+            if (population[i] != null)  nextPop[i] = population[i].copy();
         }
     }
 
@@ -355,5 +335,4 @@ public class Agent extends AbstractMultiPlayer {
         int bestAction = pop[0].actions[0];
         return action_mapping[playerID].get(bestAction);
     }
-
 }

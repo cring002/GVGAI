@@ -230,6 +230,7 @@ public class Agent extends AbstractMultiPlayer {
                 tournament[i] = list.get(index);
                 list.remove(index);
             }
+
             Arrays.sort(tournament);
 
             //get best individuals in tournament as parents

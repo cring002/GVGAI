@@ -46,9 +46,9 @@ public class Agent extends AbstractMultiPlayer {
     private boolean keepIterating = true;
     private long remaining;
 
-    private boolean shift_buffer = true;
+    private boolean shift_buffer = false;
     private boolean firstIteration = true;
-    private  boolean crossOverOn = false;
+    private  boolean crossOverOn = true;
     private float opEvalAvg = 0f;
     private int NO_CROSS_MUTATE = 5;
 

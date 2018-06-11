@@ -26,8 +26,10 @@ public class TestMultiPlayer {
 
 		String coRHEA = "tracks.multiPlayer.advanced.RHCP.Agent";
 
+		String betterRHEA = "tracks.multiPlayer.advanced.betterRHEA.Agent";
+
 		// Set here the controllers used in the games (need 2 separated by space).
-		String controllers = coRHEA + " " + sampleRHEAController;
+		String controllers = betterRHEA + " " + coRHEA;
 
 		//Load available games
 		String spGamesCollection =  "examples/all_games_2p_test.csv";
@@ -73,11 +75,11 @@ public class TestMultiPlayer {
 //		}
 
 		 // 5. This plays N games, in the first L levels, M times each. Actions to file optional (set saveActions to true).
-		 int N = games.length, L = 1, M = 3;
+		 int N = games.length, L = 1, M = 5;
 		 boolean saveActions = false;
 		 String[] levels = new String[L];
 		 String[] actionFiles = new String[L*M];
-		 for(int i = 0; i < N; ++i)
+		 for(int i = 1; i < N; ++i)
 		 {
 	         int actionIdx = 0;
 			 game = games[i][0];

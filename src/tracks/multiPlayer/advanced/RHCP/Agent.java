@@ -25,7 +25,7 @@ public class Agent extends AbstractMultiPlayer {
     private int ELITISM = 1;
 
     // constants
-    private final long BREAK_MS = 12;
+    private final long BREAK_MS = 10;
     public static final double epsilon = 1e-6;
     static final int POINT1_CROSS = 0;
     static final int UNIFORM_CROSS = 1;
@@ -53,6 +53,8 @@ public class Agent extends AbstractMultiPlayer {
     private float opEvalAvg = 0f;
     private int NO_CROSS_MUTATE = 5;
 
+    private int SHIFT_MUTATE_AMOUNT = 3;
+
 
     //Multiplayer game parameters
     int playerID, opponentID, noPlayers;
@@ -70,6 +72,7 @@ public class Agent extends AbstractMultiPlayer {
 
         // Get multiplayer game parameters
         this.playerID = playerID;
+
         noPlayers = stateObs.getNoPlayers();
         opponentID = (playerID+1)%noPlayers;
 
@@ -129,13 +132,19 @@ public class Agent extends AbstractMultiPlayer {
             if (remaining > 2*avgTimeTakenEval && remaining > BREAK_MS) { // if enough time to evaluate one more individual
                 Individual newind;
 
-                if(crossOverOn) {
-                    newind = crossover();
-                    newind = newind.mutate(MUTATION);
-                } else {
-                    newind = getHeavyMutatedInd();
-                }
+//                if(crossOverOn) {
+//                    newind = crossover();
+//                    newind = newind.mutate(MUTATION);
+//                } else {
+//                    newind = getHeavyMutatedInd();
+//                }
 
+//                if(i < 4) newind = crossover();
+//                else newind = getShiftMutatedInd();
+                //else if (i < 4) newind = getShiftMutatedInd();
+                //else newind = getHeavyMutatedInd();
+                newind = getHeavyMutatedInd();
+                //newind = newind.mutate(MUTATION);
                 // evaluate new individual, insert into population
                 add_individual(newind, nextPop, i, stateObs);
 
@@ -160,6 +169,7 @@ public class Agent extends AbstractMultiPlayer {
         }
 
         numIters++;
+        //System.out.println(numIters);
         acumTimeTaken += (elapsedTimerIteration.elapsedMillis());
         avgTimeTaken = acumTimeTaken / numIters;
     }
@@ -227,8 +237,21 @@ public class Agent extends AbstractMultiPlayer {
             tournament[i] = population[index];
         }
         Arrays.sort(tournament);
-        //return tournament[0].copy().mutate(NO_CROSS_MUTATE);
-        return tournament[0].copy().shiftMutate(3);
+        return tournament[0].copy().mutate(NO_CROSS_MUTATE);
+        //return tournament[0].copy().shiftMutate(3);
+    }
+
+    private Individual getShiftMutatedInd()
+    {
+        //Tournament selection for when not using crossover
+        Individual[] tournament = new Individual[TOURNAMENT_SIZE];
+        //Select a number of random distinct individuals for tournament and sort them based on value
+        for (int i = 0; i < TOURNAMENT_SIZE; i++) {
+            int index = randomGenerator.nextInt(population.length);
+            tournament[i] = population[index];
+        }
+        Arrays.sort(tournament);
+        return tournament[0].copy().shiftMutate(SHIFT_MUTATE_AMOUNT);
     }
     private Individual crossover() {
         Individual newind = null;

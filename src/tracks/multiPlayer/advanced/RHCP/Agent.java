@@ -14,8 +14,9 @@ public class Agent extends AbstractMultiPlayer {
 
     // variable
     private int POPULATION_SIZE = 9;
-    private int SIMULATION_DEPTH = 10;
-    private int CROSSOVER_TYPE = UNIFORM_CROSS;
+    private int SIMULATION_DEPTH = 50;
+    //private int CROSSOVER_TYPE = UNIFORM_CROSS;
+    private int CROSSOVER_TYPE = POINT1_CROSS;
 
     // set
     private int MUTATION = 1;
@@ -48,7 +49,7 @@ public class Agent extends AbstractMultiPlayer {
 
     private boolean shift_buffer = true;
     private boolean firstIteration = true;
-    private  boolean crossOverOn = false;
+    private  boolean crossOverOn = true;//false;
     private float opEvalAvg = 0f;
     private int NO_CROSS_MUTATE = 5;
 

@@ -65,6 +65,40 @@ public class Individual implements Comparable{
         return b;
     }
 
+    public Individual shiftMutate (int LENGTH) {
+        Individual b = this.copy();
+        b.setActions(actions);
+
+        int[] newSection = new int[LENGTH];
+        for(int i = 0; i < newSection.length; i++)  newSection[i] = gen.nextInt(n);
+        int start = gen.nextInt(b.actions.length);
+
+        if(gen.nextFloat() > 0.5) return shiftMutateCut(b, newSection, start); ///50/50 cut a section out and 50/50 insert a section
+        else return shiftMutateInsert(b, newSection, start);
+    }
+
+    private Individual shiftMutateCut(Individual indv, int[] newSection, int point)
+    {
+        int secI = 0;
+        for(int i = point; i < indv.actions.length; i++)
+        {
+            if(i+newSection.length < indv.actions.length) indv.actions[i] = indv.actions[i+newSection.length];
+            else indv.actions[i] = newSection[secI++];
+        }
+        return indv;
+    }
+
+    private Individual shiftMutateInsert(Individual indv, int[] newSection, int point)
+    {
+        int secI = newSection.length-1;
+        for(int i =  indv.actions.length-1; i >= point; i--)
+        {
+            if(i-newSection.length >= point) indv.actions[i] = indv.actions[i-newSection.length];
+            else indv.actions[i] = newSection[secI--];
+        }
+        return indv;
+    }
+
     /**
      * Modifies individual
      * @param cross

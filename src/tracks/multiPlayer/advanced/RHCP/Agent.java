@@ -226,7 +226,8 @@ public class Agent extends AbstractMultiPlayer {
             tournament[i] = population[index];
         }
         Arrays.sort(tournament);
-        return tournament[0].copy().mutate(NO_CROSS_MUTATE);
+        //return tournament[0].copy().mutate(NO_CROSS_MUTATE);
+        return tournament[0].copy().shiftMutate(3);
     }
     private Individual crossover() {
         Individual newind = null;

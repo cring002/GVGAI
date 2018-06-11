@@ -150,6 +150,7 @@ public class Agent extends AbstractMultiPlayer {
         population = nextPop.clone();
 
         numIters++;
+        //System.out.println(numIters);
         acumTimeTaken += (elapsedTimerIteration.elapsedMillis());
         avgTimeTaken = acumTimeTaken / numIters;
     }
@@ -236,7 +237,7 @@ public class Agent extends AbstractMultiPlayer {
             //get best individuals in tournament as parents
             if (NO_PARENTS <= TOURNAMENT_SIZE) {
                 for (int i = 0; i < NO_PARENTS; i++) {
-                    parents[i] = list.get(i);
+                    parents[i] = tournament[i];
                 }
                 newind.crossover(parents, CROSSOVER_TYPE);
             } else {

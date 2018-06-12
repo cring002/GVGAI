@@ -12,7 +12,7 @@ import java.util.*;
 public class Agent extends AbstractMultiPlayer {
 
     // variable
-    private int POPULATION_SIZE = 10;
+    private int POPULATION_SIZE = 5;
     private int SIMULATION_DEPTH = 20;
     private int CROSSOVER_TYPE = UNIFORM_CROSS;
     private double DISCOUNT = 1; //0.99;
@@ -239,7 +239,7 @@ public class Agent extends AbstractMultiPlayer {
             //get best individuals in tournament as parents
             if (NO_PARENTS <= TOURNAMENT_SIZE) {
                 for (int i = 0; i < NO_PARENTS; i++) {
-                    parents[i] = list.get(i);
+                    parents[i] = tournament[i];
                 }
                 newind.crossover(parents, CROSSOVER_TYPE);
             } else {

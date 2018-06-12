@@ -118,8 +118,9 @@ public class Agent extends AbstractMultiPlayer {
                 if (remaining > 2*avgTimeTakenEval && remaining > BREAK_MS) { // if enough time to evaluate one more individual
                     Individual newind;
 
-                    newind = crossover();
-                    newind = newind.mutate(MUTATION);
+//                    newind = crossover();
+//                    newind = newind.mutate(MUTATION);
+                    newind = getHeavyMutatedInd();
 
                     // evaluate new individual, insert into population
                     add_individual(newind, nextPop, i, stateObs);
@@ -155,6 +156,20 @@ public class Agent extends AbstractMultiPlayer {
         numIters++;
         acumTimeTaken += (elapsedTimerIteration.elapsedMillis());
         avgTimeTaken = acumTimeTaken / numIters;
+    }
+
+    private Individual getHeavyMutatedInd()
+    {
+        //Tournament selection for when not using crossover
+        Individual[] tournament = new Individual[TOURNAMENT_SIZE];
+        //Select a number of random distinct individuals for tournament and sort them based on value
+        for (int i = 0; i < TOURNAMENT_SIZE; i++) {
+            int index = randomGenerator.nextInt(population.length);
+            tournament[i] = population[index];
+        }
+        Arrays.sort(tournament);
+        return tournament[0].copy().mutate(5);
+        //return tournament[0].copy().shiftMutate(3);
     }
 
     /**

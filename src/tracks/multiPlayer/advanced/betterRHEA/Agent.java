@@ -284,10 +284,10 @@ public class Agent extends AbstractMultiPlayer {
     private void init_pop(StateObservationMulti stateObs) {
         if (shift_buffer && !firstIteration) //if using shift buffer and we have a population (e.g. not first move of the game)
         {
-            firstIteration = false;
             for(int i = 0; i < population.length; i++)  population[i].shift(); //Shift the elements down by one
             return;
         }
+        firstIteration = false;
 
         double remaining = timer.remainingTimeMillis();
 

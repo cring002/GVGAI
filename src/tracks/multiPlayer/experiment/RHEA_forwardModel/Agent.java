@@ -1,4 +1,4 @@
-package tracks.multiPlayer.advanced.betterRHEA;
+package tracks.multiPlayer.experiment.RHEA_forwardModel;
 
 import core.game.StateObservationMulti;
 import core.player.AbstractMultiPlayer;
@@ -12,8 +12,8 @@ import java.util.*;
 public class Agent extends AbstractMultiPlayer {
 
     // variable
-    private int POPULATION_SIZE = 5;
-    private int SIMULATION_DEPTH = 20;
+    private int POPULATION_SIZE = 10;
+    private int SIMULATION_DEPTH = 10;
     private int CROSSOVER_TYPE = UNIFORM_CROSS;
     private double DISCOUNT = 1; //0.99;
 
@@ -37,17 +37,15 @@ public class Agent extends AbstractMultiPlayer {
     private int[] N_ACTIONS;
     private HashMap<Integer, Types.ACTIONS>[] action_mapping;
 
-    private ElapsedCpuTimer timer;
     private Random randomGenerator;
 
     private StateHeuristicMulti heuristic;
-    private double acumTimeTakenEval = 0,avgTimeTakenEval = 0, avgTimeTaken = 0, acumTimeTaken = 0;
     private int numEvals = 0, numIters = 0;
     private boolean keepIterating = true;
     private long remaining;
 
-    private boolean shift_buffer = false;
-    private boolean firstIteration = true;
+    private int forwardModelCallsLeft = 0;
+    private int totalForwardModelCalls = 480;
 
 
     //Multiplayer game parameters
@@ -62,7 +60,6 @@ public class Agent extends AbstractMultiPlayer {
     public Agent(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer, int playerID) {
         randomGenerator = new Random();
         heuristic = new WinScoreHeuristic(stateObs);
-        this.timer = elapsedTimer;
 
         // Get multiplayer game parameters
         this.playerID = playerID;
@@ -72,25 +69,20 @@ public class Agent extends AbstractMultiPlayer {
 
     @Override
     public Types.ACTIONS act(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer) {
-        this.timer = elapsedTimer;
-        avgTimeTaken = 0;
-        acumTimeTaken = 0;
         numEvals = 0;
-        acumTimeTakenEval = 0;
         numIters = 0;
-        remaining = timer.remainingTimeMillis();
         NUM_INDIVIDUALS = 0;
         keepIterating = true;
+        forwardModelCallsLeft = totalForwardModelCalls;
+
 
         // INITIALISE POPULATION
         init_pop(stateObs);
 
 
         // RUN EVOLUTION
-        remaining = timer.remainingTimeMillis();
-        while (remaining > avgTimeTaken && remaining > BREAK_MS && keepIterating) {
+        while( forwardModelCallsLeft >= SIMULATION_DEPTH) {
             runIteration(stateObs);
-            remaining = timer.remainingTimeMillis();
         }
 
         // RETURN ACTION
@@ -103,30 +95,24 @@ public class Agent extends AbstractMultiPlayer {
      * @param stateObs - current game state
      */
     private void runIteration(StateObservationMulti stateObs) {
-        ElapsedCpuTimer elapsedTimerIteration = new ElapsedCpuTimer();
-
         if (REEVALUATE) {
             for (int i = 0; i < ELITISM; i++) {
-                if (remaining > 2*avgTimeTakenEval && remaining > BREAK_MS) { // if enough time to evaluate one more individual
+                if (forwardModelCallsLeft >= SIMULATION_DEPTH)
                     evaluate(population[i], heuristic, stateObs);
-                } else {keepIterating = false;}
+                else {keepIterating = false;}
             }
         }
 
         if (NUM_INDIVIDUALS > 1) {
             for (int i = ELITISM; i < NUM_INDIVIDUALS; i++) {
-                if (remaining > 2*avgTimeTakenEval && remaining > BREAK_MS) { // if enough time to evaluate one more individual
+                if (forwardModelCallsLeft >= SIMULATION_DEPTH) { // if enough time to evaluate one more individual
                     Individual newind;
 
                     newind = crossover();
                     newind = newind.mutate(MUTATION);
-//                    newind = getHeavyMutatedInd();
 
                     // evaluate new individual, insert into population
                     add_individual(newind, nextPop, i, stateObs);
-
-                    remaining = timer.remainingTimeMillis();
-
                 } else {keepIterating = false; break;}
             }
             Arrays.sort(nextPop, new Comparator<Individual>() {
@@ -154,22 +140,7 @@ public class Agent extends AbstractMultiPlayer {
         population = nextPop.clone();
 
         numIters++;
-        acumTimeTaken += (elapsedTimerIteration.elapsedMillis());
-        avgTimeTaken = acumTimeTaken / numIters;
-    }
-
-    private Individual getHeavyMutatedInd()
-    {
-        //Tournament selection for when not using crossover
-        Individual[] tournament = new Individual[TOURNAMENT_SIZE];
-        //Select a number of random distinct individuals for tournament and sort them based on value
-        for (int i = 0; i < TOURNAMENT_SIZE; i++) {
-            int index = randomGenerator.nextInt(population.length);
-            tournament[i] = population[index];
-        }
-        Arrays.sort(tournament);
-        return tournament[0].copy().mutate(5);
-        //return tournament[0].copy().shiftMutate(3);
+        //System.out.println(numIters);
     }
 
     /**
@@ -182,15 +153,11 @@ public class Agent extends AbstractMultiPlayer {
      */
     private double evaluate(Individual individual, StateHeuristicMulti heuristic, StateObservationMulti state) {
 
-        ElapsedCpuTimer elapsedTimerIterationEval = new ElapsedCpuTimer();
-
         StateObservationMulti st = state.copy();
         int i;
         for (i = 0; i < SIMULATION_DEPTH; i++) {
             double acum = 0, avg;
             if (! st.isGameOver()) {
-                ElapsedCpuTimer elapsedTimerIteration = new ElapsedCpuTimer();
-
                 // Multi player advance method
                 Types.ACTIONS[] advanceActs = new Types.ACTIONS[noPlayers];
                 for (int k = 0; k < noPlayers; k++) {
@@ -199,10 +166,10 @@ public class Agent extends AbstractMultiPlayer {
                     else advanceActs[k] = action_mapping[k].get(randomGenerator.nextInt(N_ACTIONS[k]));
                 }
                 st.advance(advanceActs);
+                forwardModelCallsLeft--;
+                //System.out.println(forwardModelCallsLeft);
 
-                acum += elapsedTimerIteration.elapsedMillis();
                 avg = acum / (i+1);
-                remaining = timer.remainingTimeMillis();
                 if (remaining < 2*avg || remaining < BREAK_MS) break;
             } else {
                 break;
@@ -214,14 +181,8 @@ public class Agent extends AbstractMultiPlayer {
 
         // Apply discount factor
         value *= Math.pow(DISCOUNT,i);
-
         individual.value = value;
-
         numEvals++;
-        acumTimeTakenEval += (elapsedTimerIterationEval.elapsedMillis());
-        avgTimeTakenEval = acumTimeTakenEval / numEvals;
-        remaining = timer.remainingTimeMillis();
-
         return value;
     }
 
@@ -282,14 +243,6 @@ public class Agent extends AbstractMultiPlayer {
      */
     @SuppressWarnings("unchecked")
     private void init_pop(StateObservationMulti stateObs) {
-        if (shift_buffer && !firstIteration) //if using shift buffer and we have a population (e.g. not first move of the game)
-        {
-            for(int i = 0; i < population.length; i++)  population[i].shift(); //Shift the elements down by one
-            return;
-        }
-        firstIteration = false;
-
-        double remaining = timer.remainingTimeMillis();
 
         N_ACTIONS = new int[noPlayers];
         action_mapping = new HashMap[noPlayers];
@@ -308,10 +261,9 @@ public class Agent extends AbstractMultiPlayer {
         population = new Individual[POPULATION_SIZE];
         nextPop = new Individual[POPULATION_SIZE];
         for (int i = 0; i < POPULATION_SIZE; i++) {
-            if (i == 0 || remaining > avgTimeTakenEval && remaining > BREAK_MS) {
+            if (forwardModelCallsLeft >= SIMULATION_DEPTH) {
                 population[i] = new Individual(SIMULATION_DEPTH, N_ACTIONS[playerID], randomGenerator);
                 evaluate(population[i], heuristic, stateObs);
-                remaining = timer.remainingTimeMillis();
                 NUM_INDIVIDUALS = i+1;
             } else {break;}
         }

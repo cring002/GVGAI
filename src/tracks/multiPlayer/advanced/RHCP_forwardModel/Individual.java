@@ -1,4 +1,4 @@
-package tracks.multiPlayer.advanced.betterRHEA;
+package tracks.multiPlayer.advanced.sampleRHEA_forwardModel;
 
 import java.util.Random;
 
@@ -115,14 +115,4 @@ public class Individual implements Comparable{
             s += actions[i] + " ";
         return s;
     }
-
-    public void shift (){
-        int j = 0;
-        for(; j < actions.length-1; j++) {
-            actions[j] = actions[j+1];
-        }
-        setRandAction(j);
-    }
-
-    public void setRandAction (int _i){actions[_i] = gen.nextInt(n);}
 }

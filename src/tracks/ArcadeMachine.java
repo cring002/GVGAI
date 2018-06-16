@@ -19,6 +19,9 @@ import core.player.Player;
 import ontology.Types;
 import tools.ElapsedCpuTimer;
 import tools.StatSummary;
+//for printing to file
+import java.text.SimpleDateFormat;
+import java.sql.Timestamp;
 
 /**
  * Created with IntelliJ IDEA. User: Diego Date: 06/11/13 Time: 11:24 This is a
@@ -26,6 +29,7 @@ import tools.StatSummary;
  */
 public class ArcadeMachine {
     public static final boolean VERBOSE = false;
+    public static final boolean PRINTTOFILE = true;
 
     /**
      * Reads and launches a game for a human to be played. Graphics always on.
@@ -514,7 +518,35 @@ public class ArcadeMachine {
 		sc += ", ";
 	    }
 	}
+
+	//this works for multiplayer games
+	if (PRINTTOFILE){
+		//timestamp
+		final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");
+		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+
+		//agents
+		String[] agentNames = agentName.split(" ");
+		int agentNameOffset = 28; // so that it will print RHCP.Agent rather than tracks.multiPlayer.advanced.RHCP.Agent
+		int gameNameOffset = 17; // so that it will print asteroids.txt rather than examples/2player/asteroids.txt
+
+		//open file (for now there is a hardcoded file that it is printing to)
+		String filename = System.getProperty("user.dir")+ "\\"+"output.csv";
+
+		String data = vict + ", "+ sc + ", " + game_file.substring(gameNameOffset) + ", " + agentNames[0].substring(agentNameOffset)+ ", "+ agentNames[1].substring(agentNameOffset) +", "+ dateFormat.format(timestamp)+ "\n" ; //what to be printed
+		try {
+			RandomAccessFile writer = new RandomAccessFile(filename, "rw");
+			File f = new File(filename);
+			writer.seek(f.length());//set the pointer to the end of file
+			writer.writeChars(data);
+			writer.close();
+		}catch (java.io.IOException ex){
+			System.out.println("something went wrong while opening the file to write game results..");
+		}
+		System.out.println(System.getProperty("user.dir")+" "+ filename);
+	}
 	System.out.println("Results in game " + game_file + ", " + vict + " , " + sc);
+
 	 	//+ " , " + performance.mean());
     }
 

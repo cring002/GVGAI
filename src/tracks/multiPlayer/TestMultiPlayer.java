@@ -26,11 +26,12 @@ public class TestMultiPlayer {
 
 		String coRHEA = "tracks.multiPlayer.advanced.RHCP.Agent";
 
-		String RHEA_FM = "tracks.multiPlayer.advanced.RHEA_forwardModel.Agent";
-		String RHCP_FM = "tracks.multiPlayer.advanced.RHCP_forwardModel.Agent";
+		String RHEA_FM = "tracks.multiPlayer.experiment.RHEA_forwardModel.Agent";
+		String RHCP_FM = "tracks.multiPlayer.experiment.RHCP_forwardModel.Agent";
+		String MCTS_FM = "tracks.multiPlayer.experiment.MCTS_forwardModel.Agent";
 
 		// Set here the controllers used in the games (need 2 separated by space).
-		String controllers = RHEA_FM + " " + RHCP_FM;
+		String controllers = RHCP_FM + " " + MCTS_FM;
         String controllers2 = RHCP_FM + " " + RHEA_FM;
 
 		//Load available games

@@ -1,4 +1,4 @@
-package tracks.multiPlayer.advanced.RHCP_forwardModel;
+package tracks.multiPlayer.experiment.RHEA_forwardModel;
 
 import core.game.StateObservationMulti;
 import core.player.AbstractMultiPlayer;
@@ -12,7 +12,7 @@ import java.util.*;
 public class Agent extends AbstractMultiPlayer {
 
     // variable
-    private int POPULATION_SIZE = 8;
+    private int POPULATION_SIZE = 10;
     private int SIMULATION_DEPTH = 10;
     private int CROSSOVER_TYPE = UNIFORM_CROSS;
     private double DISCOUNT = 1; //0.99;
@@ -46,9 +46,6 @@ public class Agent extends AbstractMultiPlayer {
 
     private int forwardModelCallsLeft = 0;
     private int totalForwardModelCalls = 480;
-    private int NO_CROSS_MUTATE = 5;
-    private Individual opPlan;
-    private Individual opPlanM;
 
 
     //Multiplayer game parameters
@@ -84,7 +81,7 @@ public class Agent extends AbstractMultiPlayer {
 
 
         // RUN EVOLUTION
-        while( forwardModelCallsLeft > SIMULATION_DEPTH) {
+        while( forwardModelCallsLeft >= SIMULATION_DEPTH) {
             runIteration(stateObs);
         }
 
@@ -100,15 +97,15 @@ public class Agent extends AbstractMultiPlayer {
     private void runIteration(StateObservationMulti stateObs) {
         if (REEVALUATE) {
             for (int i = 0; i < ELITISM; i++) {
-                if (forwardModelCallsLeft > SIMULATION_DEPTH)
-                    evaluate(population[i], opPlan, heuristic, stateObs, playerID);
+                if (forwardModelCallsLeft >= SIMULATION_DEPTH)
+                    evaluate(population[i], heuristic, stateObs);
                 else {keepIterating = false;}
             }
         }
 
         if (NUM_INDIVIDUALS > 1) {
             for (int i = ELITISM; i < NUM_INDIVIDUALS; i++) {
-                if (forwardModelCallsLeft > SIMULATION_DEPTH) { // if enough time to evaluate one more individual
+                if (forwardModelCallsLeft >= SIMULATION_DEPTH) { // if enough time to evaluate one more individual
                     Individual newind;
 
                     newind = crossover();
@@ -135,16 +132,9 @@ public class Agent extends AbstractMultiPlayer {
             });
         } else if (NUM_INDIVIDUALS == 1){
             Individual newind = new Individual(SIMULATION_DEPTH, N_ACTIONS[playerID], randomGenerator).mutate(MUTATION);
-            evaluate(newind, opPlan, heuristic, stateObs, playerID);
+            evaluate(newind, heuristic, stateObs);
             if (newind.value > population[0].value)
                 nextPop[0] = newind;
-        }
-
-        if (forwardModelCallsLeft > SIMULATION_DEPTH) {
-            opPlanM = opPlan.mutate(NO_CROSS_MUTATE);
-            double planScore = evaluate(opPlan, nextPop[0], heuristic, stateObs, 1 - playerID);
-            double planMScore = evaluate(opPlan, nextPop[0], heuristic, stateObs, 1 - playerID);
-            if (planMScore >= planScore) opPlan = opPlanM;
         }
 
         population = nextPop.clone();
@@ -161,7 +151,7 @@ public class Agent extends AbstractMultiPlayer {
      * @param state - current state, root of rollouts
      * @return - value of last state reached
      */
-    private double evaluate(Individual individual, Individual op,  StateHeuristicMulti heuristic, StateObservationMulti state, int playerID) {
+    private double evaluate(Individual individual, StateHeuristicMulti heuristic, StateObservationMulti state) {
 
         StateObservationMulti st = state.copy();
         int i;
@@ -173,7 +163,7 @@ public class Agent extends AbstractMultiPlayer {
                 for (int k = 0; k < noPlayers; k++) {
                     if (k == playerID)
                         advanceActs[k] = action_mapping[k].get(individual.actions[i]);
-                    else advanceActs[k] = action_mapping[k].get(op.actions[i]);
+                    else advanceActs[k] = action_mapping[k].get(randomGenerator.nextInt(N_ACTIONS[k]));
                 }
                 st.advance(advanceActs);
                 forwardModelCallsLeft--;
@@ -243,7 +233,7 @@ public class Agent extends AbstractMultiPlayer {
      * @param stateObs - current game state
      */
     private void add_individual(Individual newind, Individual[] pop, int idx, StateObservationMulti stateObs) {
-        evaluate(newind, opPlan, heuristic, stateObs, playerID);
+        evaluate(newind, heuristic, stateObs);
         pop[idx] = newind.copy();
     }
 
@@ -267,15 +257,13 @@ public class Agent extends AbstractMultiPlayer {
             }
             action_mapping[i].put(k, Types.ACTIONS.ACTION_NIL);
         }
-        opPlan = new Individual(SIMULATION_DEPTH, N_ACTIONS[1 - playerID], randomGenerator);
-        opPlanM = new Individual(SIMULATION_DEPTH, N_ACTIONS[1 - playerID], randomGenerator);
 
         population = new Individual[POPULATION_SIZE];
         nextPop = new Individual[POPULATION_SIZE];
         for (int i = 0; i < POPULATION_SIZE; i++) {
-            if (forwardModelCallsLeft > SIMULATION_DEPTH) {
+            if (forwardModelCallsLeft >= SIMULATION_DEPTH) {
                 population[i] = new Individual(SIMULATION_DEPTH, N_ACTIONS[playerID], randomGenerator);
-                evaluate(population[i], opPlan, heuristic, stateObs, playerID);
+                evaluate(population[i], heuristic, stateObs);
                 NUM_INDIVIDUALS = i+1;
             } else {break;}
         }
@@ -299,6 +287,7 @@ public class Agent extends AbstractMultiPlayer {
             if (population[i] != null)
                 nextPop[i] = population[i].copy();
         }
+
     }
 
     /**

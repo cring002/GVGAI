@@ -32,10 +32,10 @@ public class TestMultiPlayer {
 
 		// Set here the controllers used in the games (need 2 separated by space).
 		String controllers = RHCP_FM + " " + MCTS_FM;
-        String controllers2 = RHCP_FM + " " + RHEA_FM;
+		String controllers2 = RHCP_FM + " " + RHEA_FM;
 
 		//Load available games
-		String spGamesCollection =  "examples/all_games_2p_test.csv";
+		String spGamesCollection = "examples/all_games_2p_test.csv";
 		String[][] games = Utils.readGames(spGamesCollection);
 
 		// Other settings
@@ -50,9 +50,9 @@ public class TestMultiPlayer {
 		String level1 = game.replace(gameName, gameName + "_lvl" + levelIdx);
 
 		String recordActionsFile = null;// "actions_" + games[gameIdx] + "_lvl"
-						// + levelIdx + "_" + seed + ".txt";
-						// //where to record the actions
-						// executed. null if not to save.
+		// + levelIdx + "_" + seed + ".txt";
+		// //where to record the actions
+		// executed. null if not to save.
 
 		// 1. This starts a game, in a level, played by two humans.
 		//ArcadeMachine.playOneGameMulti(game, level1, recordActionsFile, seed);
@@ -61,7 +61,13 @@ public class TestMultiPlayer {
 		// 2. This plays a game in a level by the tracks. If one of the
 		// players is human, change the playerID passed
 		// to the runOneGame method to be that of the human player (0 or 1).
-		ArcadeMachine.runOneGame(game, level1, visuals, controllers, recordActionsFile, seed, 0);
+		for (int i = 0; i < 10; i++)
+		{
+			String thisGameName = games[i][1];
+			String thisGame = games[i][0];
+			String thisLevel = thisGame.replace(thisGameName, thisGameName + "_lvl" + levelIdx);
+			ArcadeMachine.runOneGame(thisGame, thisLevel, visuals, controllers, recordActionsFile, seed, 0);
+		}
 
 		// 3. This replays a game from an action file previously recorded
 //		 String readActionsFile = recordActionsFile;

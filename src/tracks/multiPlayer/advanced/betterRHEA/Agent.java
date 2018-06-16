@@ -46,7 +46,7 @@ public class Agent extends AbstractMultiPlayer {
     private boolean keepIterating = true;
     private long remaining;
 
-    private boolean shift_buffer = true;
+    private boolean shift_buffer = false;
     private boolean firstIteration = true;
 
 
@@ -118,9 +118,9 @@ public class Agent extends AbstractMultiPlayer {
                 if (remaining > 2*avgTimeTakenEval && remaining > BREAK_MS) { // if enough time to evaluate one more individual
                     Individual newind;
 
-//                    newind = crossover();
-//                    newind = newind.mutate(MUTATION);
-                    newind = getHeavyMutatedInd();
+                    newind = crossover();
+                    newind = newind.mutate(MUTATION);
+//                    newind = getHeavyMutatedInd();
 
                     // evaluate new individual, insert into population
                     add_individual(newind, nextPop, i, stateObs);

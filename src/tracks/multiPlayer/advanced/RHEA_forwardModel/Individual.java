@@ -1,4 +1,4 @@
-package tracks.multiPlayer.advanced.sampleRHEA_forwardModel;
+package tracks.multiPlayer.advanced.RHEA_forwardModel;
 
 import java.util.Random;
 

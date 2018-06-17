@@ -31,8 +31,8 @@ public class TestMultiPlayer {
 		String MCTS_FM = "tracks.multiPlayer.experiment.MCTS_forwardModel.Agent";
 
 		// Set here the controllers used in the games (need 2 separated by space).
-		String controllers = RHCP_FM + " " + MCTS_FM;
-		String controllers2 = RHCP_FM + " " + RHEA_FM;
+		String controllers = RHCP_FM + " " + RHEA_FM;
+		String controllers2 = RHEA_FM + " " + RHCP_FM;
 
 		//Load available games
 		String spGamesCollection = "examples/all_games_2p_test.csv";
@@ -61,13 +61,13 @@ public class TestMultiPlayer {
 		// 2. This plays a game in a level by the tracks. If one of the
 		// players is human, change the playerID passed
 		// to the runOneGame method to be that of the human player (0 or 1).
-		for (int i = 0; i < 10; i++)
-		{
-			String thisGameName = games[i][1];
-			String thisGame = games[i][0];
-			String thisLevel = thisGame.replace(thisGameName, thisGameName + "_lvl" + levelIdx);
-			ArcadeMachine.runOneGame(thisGame, thisLevel, visuals, controllers, recordActionsFile, seed, 0);
-		}
+//		for (int i = 0; i < 10; i++)
+//		{
+//			String thisGameName = games[i][1];
+//			String thisGame = games[i][0];
+//			String thisLevel = thisGame.replace(thisGameName, thisGameName + "_lvl" + levelIdx);
+//			ArcadeMachine.runOneGame(thisGame, thisLevel, visuals, controllers, recordActionsFile, seed, 0);
+//		}
 
 		// 3. This replays a game from an action file previously recorded
 //		 String readActionsFile = recordActionsFile;
@@ -84,24 +84,24 @@ public class TestMultiPlayer {
 //		}
 
 		 // 5. This plays N games, in the first L levels, M times each. Actions to file optional (set saveActions to true).
-//         System.out.println("Playing: " + controllers);
-//		 int N = games.length, L = 5, M = 1;
-//		 boolean saveActions = false;
-//		 String[] levels = new String[L];
-//		 String[] actionFiles = new String[L*M];
-//		 for(int i = 1; i < 10; ++i)
-//		 {
-//	         int actionIdx = 0;
-//			 game = games[i][0];
-//			 gameName = games[i][1];
-//	         for(int j = 0; j < L; ++j)
-//	         {
-//	             levels[j] = game.replace(gameName, gameName + "_lvl" + j);
-//	             if(saveActions) for(int k = 0; k < M; ++k)
-//	                actionFiles[actionIdx++] = "actions_game_" + i + "_level_" + j + "_"  + k + ".txt";
-//	         }
-//		    ArcadeMachine.runGames(game, levels, M, controllers, saveActions? actionFiles:null);
-//		 }
+         System.out.println("Playing: " + controllers);
+		 int N = games.length, L = 5, M = 1;
+		 boolean saveActions = false;
+		 String[] levels = new String[L];
+		 String[] actionFiles = new String[L*M];
+		 for(int i = 1; i < 10; ++i)
+		 {
+	         int actionIdx = 0;
+			 game = games[i][0];
+			 gameName = games[i][1];
+	         for(int j = 0; j < L; ++j)
+	         {
+	             levels[j] = game.replace(gameName, gameName + "_lvl" + j);
+	             if(saveActions) for(int k = 0; k < M; ++k)
+	                actionFiles[actionIdx++] = "actions_game_" + i + "_level_" + j + "_"  + k + ".txt";
+	         }
+		    ArcadeMachine.runGames(game, levels, M, controllers, saveActions? actionFiles:null, "blah", 0);
+		 }
 //
 //        System.out.println("Playing: " + controllers2);
 //        for(int i = 1; i < 10; ++i)

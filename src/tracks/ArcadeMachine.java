@@ -395,7 +395,7 @@ public class ArcadeMachine {
      *   game, should be recorded. Accepts null if no recording is desired. If not null,
      *   this array must contain as much String objects as level_files.length*level_times.
      */
-    public static void runGames(String game_file, String[] level_files, int level_times, String agentName, String[] actionFiles, String logFile) {
+    public static void runGames(String game_file, String[] level_files, int level_times, String agentName, String[] actionFiles, String logFile, int gameIndx) {
 	VGDLFactory.GetInstance().init(); // This always first thing to do.
 	VGDLRegistry.GetInstance().init();
 
@@ -515,13 +515,13 @@ public class ArcadeMachine {
             String sc = score[0] + "," + score[1];
 
 
-            String data = vict + ", "+ sc + ", " + game_file.substring(gameNameOffset) + ", " + agentNames[0].substring(agentNameOffset)+ ", "+ agentNames[1].substring(agentNameOffset) +"\n" ; //what to be printed
+            String data = gameIndx + "," + game_file.substring(gameNameOffset) + ", " + agentNames[0].substring(agentNameOffset)+ ", "+ agentNames[1].substring(agentNameOffset)+ "," + vict + ", "+ sc + ","  + toPlay.getGameTick() + "\n" ; //what to be printed
             try {
                 RandomAccessFile writer = new RandomAccessFile(logFile, "rw");
                 File f = new File(logFile);
                 if(f.length() == 0)
                 {
-                    String header = "P0 Wins, P1 Wins, P0 Score, P1 Score, Game, P0 Agent, P1 Agent\n";
+                    String header = "GameID, Game, P0 Agent, P1 Agent, P0 Wins, P1 Wins, P0 Score, P1 Score, Ticks\n";
                     writer.writeChars(header);
                 }
                 writer.seek(f.length());//set the pointer to the end of file
@@ -539,16 +539,16 @@ public class ArcadeMachine {
 
 	    levelIdx++;
 	}
-
-	String vict = "", sc = "";
-	for (int i = 0; i < toPlay.no_players; i++) {
-	    vict += victories[i].mean();
-	    sc += scores[i].mean();
-	    if (i != toPlay.no_players - 1) {
-		vict += ", ";
-		sc += ", ";
-	    }
-	}
+//
+//	String vict = "", sc = "";
+//	for (int i = 0; i < toPlay.no_players; i++) {
+//	    vict += victories[i].mean();
+//	    sc += scores[i].mean();
+//	    if (i != toPlay.no_players - 1) {
+//		vict += ", ";
+//		sc += ", ";
+//	    }
+//	}
 
 	//this works for multiplayer games
 //	if (PRINTTOFILE){

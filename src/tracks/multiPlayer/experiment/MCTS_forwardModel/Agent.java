@@ -1,5 +1,6 @@
 package tracks.multiPlayer.experiment.MCTS_forwardModel;
 
+import core.competition.CompetitionParameters;
 import core.game.StateObservationMulti;
 import core.player.AbstractMultiPlayer;
 import ontology.Types;
@@ -76,6 +77,7 @@ public class Agent extends AbstractMultiPlayer {
         mctsPlayer.init(stateObs);
 
         //Determine the action using MCTS...
+        totalForwardModelCalls = CompetitionParameters.forwardModelTicks;
         int action = mctsPlayer.run(totalForwardModelCalls);
 
         //... and return it.

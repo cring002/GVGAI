@@ -1,5 +1,6 @@
 package tracks.multiPlayer.experiment.RHEA_forwardModel;
 
+import core.competition.CompetitionParameters;
 import core.game.StateObservationMulti;
 import core.player.AbstractMultiPlayer;
 import ontology.Types;
@@ -12,7 +13,7 @@ import java.util.*;
 public class Agent extends AbstractMultiPlayer {
 
     // variable
-    private int POPULATION_SIZE = 8;
+    private int POPULATION_SIZE = 10;
     private int SIMULATION_DEPTH = 10;
     private int CROSSOVER_TYPE = UNIFORM_CROSS;
     private double DISCOUNT = 1; //0.99;
@@ -73,7 +74,7 @@ public class Agent extends AbstractMultiPlayer {
         numIters = 0;
         NUM_INDIVIDUALS = 0;
         keepIterating = true;
-        forwardModelCallsLeft = totalForwardModelCalls;
+        totalForwardModelCalls = CompetitionParameters.forwardModelTicks;
 
 
         // INITIALISE POPULATION

@@ -158,4 +158,6 @@ public class CompetitionParameters
     public static int LEARNING_BLOCK_SIZE = 10;
     public static boolean IS_LEARNING = false;
     public static final int validation_times = 10;
+
+    public static final int forwardModelTicks = 900;
 }

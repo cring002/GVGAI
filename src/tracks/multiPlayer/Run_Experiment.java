@@ -9,14 +9,14 @@ import java.util.Random;
  * Created with IntelliJ IDEA. User: Raluca Date: 12/04/16 This is a Java port
  * from Tom Schaul's VGDL - https://github.com/schaul/py-vgdl
  */
-public class TestMultiPlayer_cmd {
+public class Run_Experiment {
 	//for now args is:
 	// [0] - string, output file
 	// [1] - string, player 1 controller
 	// [2] - string, player 2 controller
 	// [3] - int, number of levels
 	// [4] - int, number of repetitions
-	// [5-?] - the rest are ints for game indexs. if none, all 10 games run
+	// (CURRENTLY REMOVED) [5-?] - the rest are ints for game indexs. if none, all 10 games run
     public static void main(String[] args) {
 
 		// Available controllers:

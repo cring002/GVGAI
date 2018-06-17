@@ -19,6 +19,7 @@ import core.player.Player;
 import ontology.Types;
 import tools.ElapsedCpuTimer;
 import tools.StatSummary;
+import tracks.multiPlayer.experiment.RHCP_forwardModel.Agent;
 //for printing to file
 import java.text.SimpleDateFormat;
 import java.sql.Timestamp;
@@ -514,19 +515,38 @@ public class ArcadeMachine {
             String vict = (toPlay.getWinner(0) == Types.WINNER.PLAYER_WINS ? "1" : "0") + "," + (toPlay.getWinner(1) == Types.WINNER.PLAYER_WINS ? "1" : "0");
             String sc = score[0] + "," + score[1];
 
-
-            String data = gameIndx + "," + game_file.substring(gameNameOffset) + ", " + agentNames[0].substring(agentNameOffset)+ ", "+ agentNames[1].substring(agentNameOffset)+ "," + vict + ", "+ sc + ","  + toPlay.getGameTick() + "\n" ; //what to be printed
+			float predictionAccuracy = (float)Agent.correctPredictionCount/Agent.predictionCount;
+            String data = gameIndx + "," + game_file.substring(gameNameOffset) + ", " + agentNames[0].substring(agentNameOffset)+ ", "+ agentNames[1].substring(agentNameOffset)+ "," + vict + ", "+ sc + ","  + toPlay.getGameTick() +", "+predictionAccuracy+", "+ Agent.predictionCount+", "+Agent.correctPredictionCount + "\n" ; //what to be printed
             try {
-                RandomAccessFile writer = new RandomAccessFile(logFile, "rw");
-                File f = new File(logFile);
-                if(f.length() == 0)
-                {
-                    String header = "GameID, Game, P0 Agent, P1 Agent, P0 Wins, P1 Wins, P0 Score, P1 Score, Ticks\n";
-                    writer.writeChars(header);
-                }
-                writer.seek(f.length());//set the pointer to the end of file
-                writer.writeChars(data);
-                writer.close();
+				RandomAccessFile writer = new RandomAccessFile(logFile, "rw");
+				File f = new File(logFile);
+
+				if (f.length() == 0) {
+					String header = "GameID, Game, P0 Agent, P1 Agent, P0 Wins, P1 Wins, P0 Score, P1 Score, Ticks, Prediction Accuracy, Total Predicted, Correct Predicted\n";
+					writer.writeChars(header);
+				}
+				writer.seek(f.length());//set the pointer to the end of file
+				writer.writeChars(data);
+
+				writer.close();
+
+				//prediction accuracy writing to a different file. this is in case the prediction accuracy is removed from the general writing file and wish to have this data separated
+				if(false)
+				{
+					String acc_logfile = logFile.substring(0, logFile.length() - 4) + "_acc_pred.csv";
+					//System.out.println(acc_logfile);
+					RandomAccessFile writer_accuracy = new RandomAccessFile(acc_logfile, "rw");
+					File acc_f = new File(acc_logfile);
+					if (acc_f.length() == 0) {
+						String header = "GameID, Game, P0 Agent, P1 Agent, P0 Wins, P1 Wins, P0 Score, P1 Score, Ticks, Prediction Accuracy, Total Predicted, Correct Predicted\n";
+						writer_accuracy.writeChars(header);
+					}
+					String acc_data = gameIndx + "," + game_file.substring(gameNameOffset) + ", " + agentNames[0].substring(agentNameOffset) + ", " + agentNames[1].substring(agentNameOffset) + "," + vict + ", " + sc + "," + toPlay.getGameTick() + ", " + predictionAccuracy + ", " + Agent.predictionCount + ", " + Agent.correctPredictionCount + "\n"; //what to be printed
+					writer_accuracy.seek(acc_f.length());//set the pointer to the end of file
+					writer_accuracy.writeChars(acc_data);
+					writer_accuracy.close();
+				}
+
             }catch (java.io.IOException ex){
                 System.out.println("something went wrong while opening the file to write game results..");
             }

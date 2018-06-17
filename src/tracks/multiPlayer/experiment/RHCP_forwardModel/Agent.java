@@ -51,9 +51,8 @@ public class Agent extends AbstractMultiPlayer {
     private Individual opPlanM;
 
     private boolean firstIteration = true;
-    private int predictionCount = 0; //how many predictions per game (I guess it's per game..)
-    private int correctPredictionCount = 0; // how many times it predicted correctly
-    public double predictionAccuracy = 0.0; // the overall accuracy per game
+    public static int predictionCount; //how many predictions per game
+    public static int correctPredictionCount; // how many times it predicted correctly
 
     //Multiplayer game parameters
     int playerID, opponentID, noPlayers;
@@ -80,15 +79,10 @@ public class Agent extends AbstractMultiPlayer {
         if(!firstIteration) {
             Types.ACTIONS opActualMove = stateObs.getAvatarLastAction(1 - playerID);
             Types.ACTIONS predictedMoveAc = action_mapping[opponentID].get(opPlan.actions[0]);
-            boolean correctPrediction = opActualMove == predictedMoveAc;
-            if (correctPrediction){
+            if (opActualMove == predictedMoveAc){
                 correctPredictionCount=correctPredictionCount+1;
             }
             predictionCount=predictionCount+1;
-            predictionAccuracy = correctPredictionCount/predictionCount;
-//           String predictedMove = Integer.toString(opPlan.actions[0]);
-           System.out.println("ActualMove: "+opActualMove.toString() + " PredictedMove: "+predictedMoveAc.toString()+ " "+ correctPrediction);
-           System.out.println("correct: "+correctPredictionCount+ " - All: "+ predictionCount);
         }
 
         numEvals = 0;

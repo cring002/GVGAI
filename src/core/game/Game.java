@@ -21,6 +21,7 @@ import ontology.sprites.Resource;
 import tools.*;
 import tools.pathfinder.Node;
 import tools.pathfinder.PathFinder;
+import tracks.multiPlayer.experiment.RHCP_forwardModel.Agent;
 
 import javax.swing.*;
 import java.awt.*;
@@ -757,6 +758,10 @@ public abstract class Game {
 		historicEvents.clear();
 
 		resetShieldEffects();
+
+		//reset the static prediction accuracy variables used in Agent file
+		Agent.correctPredictionCount=0;
+		Agent.predictionCount=0;
 	}
 
 	/**

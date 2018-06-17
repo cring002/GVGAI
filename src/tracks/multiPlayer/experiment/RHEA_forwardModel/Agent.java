@@ -14,7 +14,7 @@ public class Agent extends AbstractMultiPlayer {
 
     // variable
     private int POPULATION_SIZE = 10;
-    private int SIMULATION_DEPTH = 14;
+    private int SIMULATION_DEPTH = 15;
     private int CROSSOVER_TYPE = UNIFORM_CROSS;
     private double DISCOUNT = 1; //0.99;
 

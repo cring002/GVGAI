@@ -531,6 +531,7 @@ public class ArcadeMachine {
                 System.out.println("something went wrong while opening the file to write game results..");
             }
             //System.out.println(System.getProperty("user.dir")+" "+ filename);
+			System.out.println();
         }
 		// reset the game.
 		toPlay.reset();

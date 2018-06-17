@@ -36,10 +36,10 @@ public class Run_Experiment {
 
 		String reportFile = "report.csv";
 		String player1 = RHCP;
-		String player2 = RHCP;
-		int game = 0;
-		int levels = 5;
-		int repeat = 5;
+        String player2 = RHEA;
+		int game = 1;
+		int levels = 1;
+		int repeat = 1;
 		int [] gameIndx = new int [10];
 		for(int i = 0; i < gameIndx.length; i++) gameIndx[i] = i;
 

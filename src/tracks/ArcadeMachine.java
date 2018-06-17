@@ -500,8 +500,38 @@ public class ArcadeMachine {
 			int id = player.getPlayerID();
 			scores[id].add(score[id]);
 			victories[id].add(toPlay.getWinner(id) == Types.WINNER.PLAYER_WINS ? 1 : 0);
-		    }
 
+		    }
+        //this works for multiplayer games
+        if (PRINTTOFILE){
+            //agents
+            int agentNameOffset = 30; // so that it will print RHCP.Agent rather than tracks.multiPlayer.advanced.RHCP.Agent
+            int gameNameOffset = 17; // so that it will print asteroids.txt rather than examples/2player/asteroids.txt
+
+            //open file (for now there is a hardcoded file that it is printing to)
+            //String filename = System.getProperty("user.dir")+ "\\"+"output.csv";
+
+            String vict = (toPlay.getWinner(0) == Types.WINNER.PLAYER_WINS ? "1" : "0") + "," + (toPlay.getWinner(1) == Types.WINNER.PLAYER_WINS ? "1" : "0");
+            String sc = score[0] + "," + score[1];
+
+
+            String data = vict + ", "+ sc + ", " + game_file.substring(gameNameOffset) + ", " + agentNames[0].substring(agentNameOffset)+ ", "+ agentNames[1].substring(agentNameOffset) +"\n" ; //what to be printed
+            try {
+                RandomAccessFile writer = new RandomAccessFile(logFile, "rw");
+                File f = new File(logFile);
+                if(f.length() == 0)
+                {
+                    String header = "P0 Wins, P1 Wins, P0 Score, P1 Score, Game, P0 Agent, P1 Agent\n";
+                    writer.writeChars(header);
+                }
+                writer.seek(f.length());//set the pointer to the end of file
+                writer.writeChars(data);
+                writer.close();
+            }catch (java.io.IOException ex){
+                System.out.println("something went wrong while opening the file to write game results..");
+            }
+            //System.out.println(System.getProperty("user.dir")+" "+ filename);
+        }
 		// reset the game.
 		toPlay.reset();
 	    }
@@ -520,38 +550,38 @@ public class ArcadeMachine {
 	}
 
 	//this works for multiplayer games
-	if (PRINTTOFILE){
-		//timestamp
-		final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");
-		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-
-		//agents
-		String[] agentNames = agentName.split(" ");
-		int agentNameOffset = 30; // so that it will print RHCP.Agent rather than tracks.multiPlayer.advanced.RHCP.Agent
-		int gameNameOffset = 17; // so that it will print asteroids.txt rather than examples/2player/asteroids.txt
-
-		//open file (for now there is a hardcoded file that it is printing to)
-		//String filename = System.getProperty("user.dir")+ "\\"+"output.csv";
-		String filename = logFile;
-
-		String data = vict + ", "+ sc + ", " + game_file.substring(gameNameOffset) + ", " + agentNames[0].substring(agentNameOffset)+ ", "+ agentNames[1].substring(agentNameOffset) +", "+ dateFormat.format(timestamp)+ "\n" ; //what to be printed
-		try {
-			RandomAccessFile writer = new RandomAccessFile(filename, "rw");
-			File f = new File(filename);
-			if(f.length() == 0)
-			{
-				String header = "P0 Wins, P1 Wins, P0 Score, P1 Score, Game, P0 Agent, P1 Agent, DataTime\n";
-				writer.writeChars(header);
-			}
-			writer.seek(f.length());//set the pointer to the end of file
-			writer.writeChars(data);
-			writer.close();
-		}catch (java.io.IOException ex){
-			System.out.println("something went wrong while opening the file to write game results..");
-		}
-		//System.out.println(System.getProperty("user.dir")+" "+ filename);
-	}
-	System.out.println("Results in game " + game_file + ", " + vict + " , " + sc);
+//	if (PRINTTOFILE){
+//		//timestamp
+//		final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");
+//		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+//
+//		//agents
+//		String[] agentNames = agentName.split(" ");
+//		int agentNameOffset = 30; // so that it will print RHCP.Agent rather than tracks.multiPlayer.advanced.RHCP.Agent
+//		int gameNameOffset = 17; // so that it will print asteroids.txt rather than examples/2player/asteroids.txt
+//
+//		//open file (for now there is a hardcoded file that it is printing to)
+//		//String filename = System.getProperty("user.dir")+ "\\"+"output.csv";
+//		String filename = logFile;
+//
+//		String data = vict + ", "+ sc + ", " + game_file.substring(gameNameOffset) + ", " + agentNames[0].substring(agentNameOffset)+ ", "+ agentNames[1].substring(agentNameOffset) +", "+ dateFormat.format(timestamp)+ "\n" ; //what to be printed
+//		try {
+//			RandomAccessFile writer = new RandomAccessFile(filename, "rw");
+//			File f = new File(filename);
+//			if(f.length() == 0)
+//			{
+//				String header = "P0 Wins, P1 Wins, P0 Score, P1 Score, Game, P0 Agent, P1 Agent, DataTime\n";
+//				writer.writeChars(header);
+//			}
+//			writer.seek(f.length());//set the pointer to the end of file
+//			writer.writeChars(data);
+//			writer.close();
+//		}catch (java.io.IOException ex){
+//			System.out.println("something went wrong while opening the file to write game results..");
+//		}
+//		//System.out.println(System.getProperty("user.dir")+" "+ filename);
+//	}
+//	System.out.println("Results in game " + game_file + ", " + vict + " , " + sc);
 
 	 	//+ " , " + performance.mean());
     }

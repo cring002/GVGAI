@@ -14,7 +14,7 @@ public class Run_Experiment {
 	// [0] - string, output file
 	// [1] - string, player 1 controller
 	// [2] - string, player 2 controller
-	// [3] - int, number of levels
+	// [3] - int, game
 	// [4] - int, number of repetitions
 	// (CURRENTLY REMOVED) [5-?] - the rest are ints for game indexs. if none, all 10 games run
     public static void main(String[] args) {
@@ -37,6 +37,7 @@ public class Run_Experiment {
 		String reportFile = "report.csv";
 		String player1 = RHCP;
 		String player2 = RHCP;
+		int game = 0;
 		int levels = 5;
 		int repeat = 5;
 		int [] gameIndx = new int [10];
@@ -60,19 +61,14 @@ public class Run_Experiment {
 			else System.out.println("Could not find a controller called " + args[2]);
 
 			for (int i=3;i<args.length;i++){args_int[i]=Integer.valueOf(args[i]);}
-			 levels = args_int[3];
+			 game = args_int[3];
 			 repeat = args_int [4];
-			 //if there are more than 5 arguments the rest are for games
-//			 if (args.length>5){
-//			 	//add them all to gameindx array
-//				 System.arraycopy(args_int, 5, gameIndx, 0, args_int.length-5);
-//			 }
 		}
 
 		String controllers = player1 + " " + player2;
 		String controllers2 = player2 + " " + player1;
-		runGames (controllers, games, gameIndx, levels,repeat, reportFile);
-		runGames (controllers2, games, gameIndx, levels,repeat, reportFile);
+		runGames (controllers, games, game,repeat, reportFile);
+		runGames (controllers2, games, game,repeat, reportFile);
     }
 
     /*
@@ -82,33 +78,24 @@ public class Run_Experiment {
     * gamesIndx [] = a list of the games indexes (0 to 9). if empty will run all 10 games
     * levels  = how many levels to run (0-4)
     * repeat  = how many times to run the games and levels */
-    private static void runGames(String controllers,String[][] games, int gamesIndx[], int Levels, int Repeat, String outFile ){
+    private static void runGames(String controllers,String[][] games, int gameIndx, int Repeat, String outFile ){
 		System.out.println("Playing: " + controllers);
 
-		//if if there are any game indexes given then add all of them from the games variable
-		if (gamesIndx.length==0){
-			gamesIndx = new int[games.length];
-			for (int i =0; i<games.length; i++){
-				gamesIndx[i]=i;
-			}
-		}
-
-		int N = games.length, L = Levels, M = Repeat;
+		int N = games.length, L = 5, M = Repeat;
 		boolean saveActions = false;
 		String[] levels = new String[L];
 		String[] actionFiles = new String[L*M];
-		for(int i: gamesIndx)
+
+		int actionIdx = 0;
+		String game = games[gameIndx][0];
+		String gameName = games[gameIndx][1];
+		for(int j = 0; j < L; ++j)
 		{
-			int actionIdx = 0;
-			String game = games[i][0];
-			String gameName = games[i][1];
-			for(int j = 0; j < L; ++j)
-			{
-				levels[j] = game.replace(gameName, gameName + "_lvl" + j);
-				if(saveActions) for(int k = 0; k < M; ++k)
-					actionFiles[actionIdx++] = "actions_game_" + i + "_level_" + j + "_"  + k + ".txt";
-			}
-			ArcadeMachine.runGames(game, levels, M, controllers, saveActions? actionFiles:null, outFile);
+			levels[j] = game.replace(gameName, gameName + "_lvl" + j);
+			if(saveActions) for(int k = 0; k < M; ++k)
+				actionFiles[actionIdx++] = "actions_game_" + gameIndx + "_level_" + j + "_"  + k + ".txt";
 		}
+		ArcadeMachine.runGames(game, levels, M, controllers, saveActions? actionFiles:null, outFile, gameIndx);
+
 	}
 }

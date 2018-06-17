@@ -12,7 +12,7 @@ import java.util.*;
 public class Agent extends AbstractMultiPlayer {
 
     // variable
-    private int POPULATION_SIZE = 8;
+    private int POPULATION_SIZE = 6;
     private int SIMULATION_DEPTH = 20;
     private int CROSSOVER_TYPE = UNIFORM_CROSS;
     private double DISCOUNT = 1; //0.99;

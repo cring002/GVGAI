@@ -395,7 +395,7 @@ public class ArcadeMachine {
      *   game, should be recorded. Accepts null if no recording is desired. If not null,
      *   this array must contain as much String objects as level_files.length*level_times.
      */
-    public static void runGames(String game_file, String[] level_files, int level_times, String agentName, String[] actionFiles) {
+    public static void runGames(String game_file, String[] level_files, int level_times, String agentName, String[] actionFiles, String logFile) {
 	VGDLFactory.GetInstance().init(); // This always first thing to do.
 	VGDLRegistry.GetInstance().init();
 
@@ -527,23 +527,29 @@ public class ArcadeMachine {
 
 		//agents
 		String[] agentNames = agentName.split(" ");
-		int agentNameOffset = 28; // so that it will print RHCP.Agent rather than tracks.multiPlayer.advanced.RHCP.Agent
+		int agentNameOffset = 30; // so that it will print RHCP.Agent rather than tracks.multiPlayer.advanced.RHCP.Agent
 		int gameNameOffset = 17; // so that it will print asteroids.txt rather than examples/2player/asteroids.txt
 
 		//open file (for now there is a hardcoded file that it is printing to)
-		String filename = System.getProperty("user.dir")+ "\\"+"output.csv";
+		//String filename = System.getProperty("user.dir")+ "\\"+"output.csv";
+		String filename = logFile;
 
 		String data = vict + ", "+ sc + ", " + game_file.substring(gameNameOffset) + ", " + agentNames[0].substring(agentNameOffset)+ ", "+ agentNames[1].substring(agentNameOffset) +", "+ dateFormat.format(timestamp)+ "\n" ; //what to be printed
 		try {
 			RandomAccessFile writer = new RandomAccessFile(filename, "rw");
 			File f = new File(filename);
+			if(f.length() == 0)
+			{
+				String header = "P0 Wins, P1 Wins, P0 Score, P1 Score, Game, P0 Agent, P1 Agent, DataTime\n";
+				writer.writeChars(header);
+			}
 			writer.seek(f.length());//set the pointer to the end of file
 			writer.writeChars(data);
 			writer.close();
 		}catch (java.io.IOException ex){
 			System.out.println("something went wrong while opening the file to write game results..");
 		}
-		System.out.println(System.getProperty("user.dir")+" "+ filename);
+		//System.out.println(System.getProperty("user.dir")+" "+ filename);
 	}
 	System.out.println("Results in game " + game_file + ", " + vict + " , " + sc);
 

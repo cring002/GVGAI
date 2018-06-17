@@ -11,66 +11,68 @@ import java.util.Random;
  */
 public class TestMultiPlayer_cmd {
 	//for now args is:
-	// [0] - int, number of levels
-	// [1] - int, number of repetitions
-	// [2-?] - the rest are ints for game indexs. if none, all 10 games run
+	// [0] - string, output file
+	// [1] - string, player 1 controller
+	// [2] - string, player 2 controller
+	// [3] - int, number of levels
+	// [4] - int, number of repetitions
+	// [5-?] - the rest are ints for game indexs. if none, all 10 games run
     public static void main(String[] args) {
 
 		// Available controllers:
 		String RHCP = "tracks.multiPlayer.experiment.RHCP_forwardModel.Agent";
 		String RHEA = "tracks.multiPlayer.experiment.RHEA_forwardModel.Agent";
 		String MCTS = "tracks.multiPlayer.experiment.MCTS_forwardModel.Agent";
-		String Random = "tracks.multiPlayer.experiment.Random.Agent";
+		String RAND = "tracks.multiPlayer.experiment.Random.Agent";
 
-
-		// Set here the controllers used in the games (need 2 separated by space).
-		String controllers = RHCP + " " + RHCP;
-        String controllers2 = RHCP + " " + RHCP;
 
 		//Load available games
-//		String spGamesCollection =  "examples/all_games_2p_test.csv";
-		String spGamesCollection =  System.getProperty("user.dir")+"/examples/all_games_2p_test.csv";
+		String spGamesCollection =  "examples/all_games_2p_test.csv";
+		//String spGamesCollection =  System.getProperty("user.dir")+"/examples/all_games_2p_test.csv";
 		System.out.println(spGamesCollection);
 		// in games[][] - there are 10 games: games[i][j] where i is the game index (0 to 9)
 		// and j is the game's details (0 - file path of the game definition; 1 - the game's name)
 		String[][] games = Utils.readGames(spGamesCollection);
 
-
-		// Other settings
-		boolean visuals = true;
-		int seed = new Random().nextInt();
-
-		// Game and level to play
-//		THESE ARE NOT USED (are overwritten below in 5.)
-		int gameIdx = 6;
-		int levelIdx = 0; // level names from 0 to 4 (game_lvlN.txt).
-		String gameName = games[gameIdx][1];
-		String game = games[gameIdx][0];
-		String level1 = game.replace(gameName, gameName + "_lvl" + levelIdx);
-
-		String recordActionsFile = null;// "actions_" + games[gameIdx] + "_lvl"
-						// + levelIdx + "_" + seed + ".txt";
-						// //where to record the actions
-						// executed. null if not to save.
-
+		String reportFile = "report.csv";
+		String player1 = RHCP;
+		String player2 = RHCP;
 		int levels = 5;
 		int repeat = 5;
 		int [] gameIndx = new int [10];
+		for(int i = 0; i < gameIndx.length; i++) gameIndx[i] = i;
+
 		int[] args_int = new int [args.length];
 		//if there are at least 2 arguments
 		if(args.length>1){
-			for (int i=0;i<args.length;i++){args_int[i]=Integer.valueOf(args[i]);}
-			 levels = args_int[0];
-			 repeat = args_int [1];
-			 //if there are more than 2 arguments the rest are for games
-			 if (args.length>2){
-			 	//add them all to gameindx array
-				 System.arraycopy(args_int, 2, gameIndx, 0, args_int.length-2);
+			reportFile = args[0];
 
-			 }
+			if(args[1].equals("RHCP")) player1 = RHCP;
+			else if(args[1].equals("RHEA")) player1 = RHEA;
+			else if(args[1].equals("MCTS")) player1 = MCTS;
+			else if(args[1].equals("RAND")) player1 = RAND;
+			else System.out.println("Could not find a controller called " + args[1]);
+
+			if(args[2].equals("RHCP")) player2 = RHCP;
+			else if(args[2].equals("RHEA")) player2 = RHEA;
+			else if(args[2].equals("MCTS")) player2 = MCTS;
+			else if(args[2].equals("RAND")) player2 = RAND;
+			else System.out.println("Could not find a controller called " + args[2]);
+
+			for (int i=3;i<args.length;i++){args_int[i]=Integer.valueOf(args[i]);}
+			 levels = args_int[3];
+			 repeat = args_int [4];
+			 //if there are more than 5 arguments the rest are for games
+//			 if (args.length>5){
+//			 	//add them all to gameindx array
+//				 System.arraycopy(args_int, 5, gameIndx, 0, args_int.length-5);
+//			 }
 		}
-		runGames (controllers, games, gameIndx, levels,repeat);
-		runGames (controllers2, games, gameIndx, levels,repeat);
+
+		String controllers = player1 + " " + player2;
+		String controllers2 = player2 + " " + player1;
+		runGames (controllers, games, gameIndx, levels,repeat, reportFile);
+		runGames (controllers2, games, gameIndx, levels,repeat, reportFile);
     }
 
     /*
@@ -80,7 +82,7 @@ public class TestMultiPlayer_cmd {
     * gamesIndx [] = a list of the games indexes (0 to 9). if empty will run all 10 games
     * levels  = how many levels to run (0-4)
     * repeat  = how many times to run the games and levels */
-    private static void runGames(String controllers,String[][] games, int gamesIndx[], int Levels, int Repreat ){
+    private static void runGames(String controllers,String[][] games, int gamesIndx[], int Levels, int Repeat, String outFile ){
 		System.out.println("Playing: " + controllers);
 
 		//if if there are any game indexes given then add all of them from the games variable
@@ -91,7 +93,7 @@ public class TestMultiPlayer_cmd {
 			}
 		}
 
-		int N = games.length, L = Levels, M = Repreat;
+		int N = games.length, L = Levels, M = Repeat;
 		boolean saveActions = false;
 		String[] levels = new String[L];
 		String[] actionFiles = new String[L*M];
@@ -106,7 +108,7 @@ public class TestMultiPlayer_cmd {
 				if(saveActions) for(int k = 0; k < M; ++k)
 					actionFiles[actionIdx++] = "actions_game_" + i + "_level_" + j + "_"  + k + ".txt";
 			}
-			ArcadeMachine.runGames(game, levels, M, controllers, saveActions? actionFiles:null);
+			ArcadeMachine.runGames(game, levels, M, controllers, saveActions? actionFiles:null, outFile);
 		}
 	}
 }

@@ -516,6 +516,12 @@ public class ArcadeMachine {
             String sc = score[0] + "," + score[1];
 
 			float predictionAccuracy = (float)Agent.correctPredictionCount/Agent.predictionCount;
+
+			//if the agent RHCP is not running, the prediction accuracy is -1
+			if (Agent.correctPredictionCount==-1 && Agent.predictionCount==-1){
+				 predictionAccuracy = -1;
+			}
+
             String data = gameIndx + "," + game_file.substring(gameNameOffset) + ", " + agentNames[0].substring(agentNameOffset)+ ", "+ agentNames[1].substring(agentNameOffset)+ "," + vict + ", "+ sc + ","  + toPlay.getGameTick() +", "+predictionAccuracy+", "+ Agent.predictionCount+", "+Agent.correctPredictionCount + "\n" ; //what to be printed
             try {
 				RandomAccessFile writer = new RandomAccessFile(logFile, "rw");
@@ -555,6 +561,10 @@ public class ArcadeMachine {
         }
 		// reset the game.
 		toPlay.reset();
+		//reset the static prediction accuracy variables used in Agent file.
+			// they are reset to -1 so that when RHCP is not used, -1 is printed to file
+			Agent.correctPredictionCount=0;
+			Agent.predictionCount=0;
 	    }
 
 	    levelIdx++;

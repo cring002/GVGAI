@@ -75,6 +75,8 @@ public class Agent extends AbstractMultiPlayer {
 
     @Override
     public Types.ACTIONS act(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer) {
+        if(predictionCount == -1) predictionCount =0;
+        if(correctPredictionCount == -1) correctPredictionCount =0;
 
         if(!firstIteration) {
             Types.ACTIONS opActualMove = stateObs.getAvatarLastAction(1 - playerID);

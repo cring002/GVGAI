@@ -759,9 +759,7 @@ public abstract class Game {
 
 		resetShieldEffects();
 
-		//reset the static prediction accuracy variables used in Agent file
-		Agent.correctPredictionCount=0;
-		Agent.predictionCount=0;
+
 	}
 
 	/**

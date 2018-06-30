@@ -68,7 +68,7 @@ public class Run_Experiment {
 		String controllers = player1 + " " + player2;
 		String controllers2 = player2 + " " + player1;
 		runGames (controllers, games, game,repeat, reportFile);
-		runGames (controllers2, games, game,repeat, reportFile);
+		//runGames (controllers2, games, game,repeat, reportFile);
     }
 
     /*

@@ -168,9 +168,6 @@ public class Agent extends AbstractMultiPlayer {
                 st.advance(advanceActs);
                 forwardModelCallsLeft--;
                 //System.out.println(forwardModelCallsLeft);
-
-                avg = acum / (i+1);
-                if (remaining < 2*avg || remaining < BREAK_MS) break;
             } else {
                 break;
             }

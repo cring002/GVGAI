@@ -23,7 +23,7 @@ public class SingleTreeNode
     public int childIdx;
 
     public int MCTS_ITERATIONS = 100;
-    public int ROLLOUT_DEPTH = 10;
+    public int ROLLOUT_DEPTH = 15;
     public double K = Math.sqrt(2);
     public double REWARD_DISCOUNT = 1.00;
     public int[] NUM_ACTIONS;

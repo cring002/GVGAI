@@ -155,7 +155,7 @@ public class Agent extends AbstractMultiPlayer {
                 nextPop[0] = newind;
         }
 
-        if (forwardModelCallsLeft >= SIMULATION_DEPTH) {
+        if (forwardModelCallsLeft >= SIMULATION_DEPTH*2) {
             opPlanM = opPlan.mutate(NO_CROSS_MUTATE);
             double planScore = evaluate(opPlan, nextPop[0], heuristic, stateObs, 1 - playerID);
             double planMScore = evaluate(opPlan, nextPop[0], heuristic, stateObs, 1 - playerID);
@@ -165,7 +165,8 @@ public class Agent extends AbstractMultiPlayer {
         population = nextPop.clone();
 
         numIters++;
-        //System.out.println(numIters);
+        System.out.println(numIters);
+        System.out.println(forwardModelCallsLeft);
     }
 
     /**
@@ -194,8 +195,6 @@ public class Agent extends AbstractMultiPlayer {
                 forwardModelCallsLeft--;
                 //System.out.println(forwardModelCallsLeft);
 
-                avg = acum / (i+1);
-                if (remaining < 2*avg || remaining < BREAK_MS) break;
             } else {
                 break;
             }

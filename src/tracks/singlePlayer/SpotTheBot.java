@@ -26,6 +26,7 @@ public class SpotTheBot {
 		int gameIdx = 0;
 		int levelIdx = 0; // level names from 0 to 4 (game_lvlN.txt).
 		int userID = 0;
+		int skill = 0;
 		boolean aiplayer = false;
 
 		File file = new File("config.txt");
@@ -39,6 +40,8 @@ public class SpotTheBot {
 					gameIdx = getValueFromString(st);
 				else if(st.contains("level"))
 					levelIdx = getValueFromString(st);
+				else if(st.contains("skill"))
+					skill = getValueFromString(st);
 				else if(st.contains("ai"))
 					aiplayer = true;
 
@@ -49,22 +52,30 @@ public class SpotTheBot {
 		}
 
 		String aiString = "";
+//		if(aiplayer){
+//			if(userID == 0)  aiString = "tracks.singlePlayer.spotthebot.sampleonesteplookahead.Agent";
+//			else if(userID == 1) aiString = "tracks.singlePlayer.spotthebot.sampleRS.Agent";
+//			else if(userID == 2) aiString = "tracks.singlePlayer.spotthebot.CatLinux.Agent";
+//			else if(userID == 3) aiString = "tracks.singlePlayer.spotthebot.sampleMCTS.Agent";
+//			else if(userID == 4) aiString = "tracks.singlePlayer.spotthebot.YOLOBOT.Agent";
+//			else if(userID == 5) aiString = "tracks.singlePlayer.spotthebot.YTCriber.Agent";
+//		}
+
 		if(aiplayer){
-			if(userID == 0)  aiString = "tracks.singlePlayer.simple.sampleRandom.Agent";
-			else if(userID == 1) aiString = "tracks.singlePlayer.simple.sampleonesteplookahead.Agent";
-			else if(userID == 2) aiString = "tracks.singlePlayer.simple.greedyTreeSearch.Agent";
-			else if(userID == 3) aiString = "tracks.singlePlayer.advanced.sampleMCTS.Agent";
-			else if(userID == 4) aiString = "tracks.singlePlayer.advanced.sampleRS.Agent";
-			else if(userID == 5) aiString = "tracks.singlePlayer.advanced.sampleRHEA.Agent";
-			else if(userID == 6) aiString = "tracks.singlePlayer.advanced.olets.Agent";
+			if(userID == 0)  aiString = "sampleonesteplookahead.Agent";
+			else if(userID == 1) aiString = "sampleGA.Agent";
+			else if(userID == 2) aiString = "CatLinux.Agent";
+			else if(userID == 3) aiString = "sampleMCTS.Agent";
+			else if(userID == 4) aiString = "YOLOBOT.Agent";
+			else if(userID == 5) aiString = "YBCriber.Agent";
 		}
 
 		String gameName = games[gameIdx][1];
 		String game = games[gameIdx][0];
 		String level1 = game.replace(gameName, gameName + "_lvl" + levelIdx);
 
-		String recordActionsFile =  aiplayer == false ? "game_logs/human_"+ gameIdx + "_" + levelIdx + "_" + userID + "_" + seed + ".txt"
-				: "game_logs/ai_"+ gameIdx + "_" + levelIdx + "_" + userID + "_" + seed  + ".txt" ;
+		String recordActionsFile =  aiplayer == false ? "game_logs/human_"+ gameIdx + "_" + levelIdx + "_" + userID + "_" + skill + "_" + seed + ".txt"
+				: "game_logs/ai_"+ gameIdx + "_" + levelIdx + "_" + userID + "_" + skill + "_" + seed  + ".txt" ;
 
 		if(!aiplayer) ArcadeMachine.playOneGame(game, level1, recordActionsFile, seed);
 		else ArcadeMachine.runOneGame(game, level1, visuals, aiString, recordActionsFile, seed, 0);

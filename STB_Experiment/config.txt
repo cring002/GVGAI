@@ -1,0 +1,4 @@
+id 6
+game 0
+level 2
+ai

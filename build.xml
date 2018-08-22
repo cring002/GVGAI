@@ -59,13 +59,13 @@
 
 	
 
-	<!-- RUN tracks.singlePlayer.Test.java -->
+	<!-- RUN tracks.singlePlayer.SpotTheBotTheBot.java -->
 	<target name="cleandist" depends="clean, makedirectories, compile,dist">
 	</target>
 
 	<target name="run" depends="compile">
-		<echo message="Executing tracks.singlePlayer.Test.java ..."/>
-		<java fork="true" classname="tracks.singlePlayer.Test">
+		<echo message="Executing tracks.singlePlayer.SpotTheBot.java ..."/>
+		<java fork="true" classname="tracks.singlePlayer.SpotTheBot">
 		   <classpath>
               		<path location="${classes.dir}"/>
       		   </classpath>

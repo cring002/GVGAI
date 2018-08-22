@@ -12,7 +12,7 @@ Google group - https://groups.google.com/forum/#!forum/the-general-video-game-co
 
 **3. Where are the Test methods? Due to the explosion of GVGAI competition tracks, we have distributed the main methods in different classes across the code hierarchy:
 
- - Single Player Planning track: tracks.singlePlayer.Test.java
+ - Single Player Planning track: tracks.singlePlayer.SpotTheBot.java
  - 2-Player Planning track: tracks.multiPlayer.TestMultiPlayer.java
  - Level Generation track: tracks.levelGeneration.TestLevelGeneration.java
  - Rule Generation track: tracks.ruleGeneration.TestRuleGeneration.java

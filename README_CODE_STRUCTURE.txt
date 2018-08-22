@@ -2,7 +2,7 @@
 Java files with Main() entry points:
 ####################################
 
- - **tracks.singlePlayer.Test.java** This is the main test file to run single player games in the vgdl framework. It uses methods of the class ArcadeMachine.java. In particular, you can execute the framework in the following ways:
+ - **tracks.singlePlayer.SpotTheBot.java** This is the main test file to run single player games in the vgdl framework. It uses methods of the class ArcadeMachine.java. In particular, you can execute the framework in the following ways:
      1. Play a game/level as a human (ArcadeMachine.playOneGame(...)).
      2. Play a game/level with a controller (ArcadeMachine.runOneGame(...)).
      3. Replay a game/level from an action file, obtained in a previous run (ArcadeMachine.replayGame(...)).
